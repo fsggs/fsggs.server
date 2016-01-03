@@ -1,0 +1,54 @@
+repositories {
+    mavenCentral()
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+ext.configFile = file "build.properties"
+configFile.withReader {
+    def prop = new Properties()
+    prop.load(it)
+    project.ext.config = new ConfigSlurper().parse prop
+}
+
+compileJava.options.bootClasspath = config.jdk + '/jre/lib/rt.jar'
+
+group config.package
+version config.version
+
+jar {
+    manifest {
+        attributes 'Main-Class': config.package + '.' + config.application,
+                'Built-By': System.getProperty('user.name'),
+                'Created-By': "${System.getProperty('java.vm.version')} + (${System.getProperty('java.vm.vendor')})",
+                'Implementation-Title': config.title,
+                'Implementation-Version': version,
+                'Provider': 'Gradle'
+    }
+
+}
+
+task fatJar(type: Jar) {
+    manifest.from jar.manifest
+    classifier = 'all'
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    } {
+        exclude "META-INF/*.SF"
+        exclude "META-INF/*.DSA"
+        exclude "META-INF/*.RSA"
+    }
+    with jar
+}
+
+tasks.build.dependsOn fatJar
+
+dependencies {
+    compile 'io.netty:netty-all:5.0.0.Alpha2'
+    compile 'org.slf4j:slf4j-log4j12:1.7.13'
+}
