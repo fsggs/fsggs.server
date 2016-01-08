@@ -32,6 +32,10 @@ jar {
 
 }
 
+tasks.withType(JavaCompile) { task ->
+    task.options.encoding = 'UTF-8'
+}
+
 task fatJar(type: Jar) {
     manifest.from jar.manifest
     classifier = 'all'
@@ -49,6 +53,10 @@ task fatJar(type: Jar) {
 tasks.build.dependsOn fatJar
 
 dependencies {
+    compile 'org.javassist:javassist:3.20.0-GA'
     compile 'io.netty:netty-all:5.0.0.Alpha2'
+    compile 'com.jcraft:jzlib:1.1.3'
+    compile 'com.mitchellbosecke:pebble:2.0.0'
     compile 'org.slf4j:slf4j-log4j12:1.7.13'
+    compile 'log4j:apache-log4j-extras:1.0'
 }
