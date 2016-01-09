@@ -73,13 +73,13 @@ public class HttpServerHandler {
         }
 
         // Send the demo page and favicon.ico
-        if ("/test-websocket".equals(request.uri())) {
-            Map<String, Object> data = new HashMap<>();
-            data.put("websocketURI", getWebSocketLocation(request));
-
-            sendParsedPage("public/test-websocket.peb", data, context, request);
-            return;
-        }
+//        if ("/test-websocket".equals(request.uri())) {
+//            Map<String, Object> data = new HashMap<>();
+//            data.put("websocketURI", getWebSocketLocation(request));
+//
+//            sendParsedPage("public/test-websocket.peb", data, context, request);
+//            return;
+//        }
 
         final String separator = FileSystems.getDefault().getSeparator();
         final String uri = request.uri();

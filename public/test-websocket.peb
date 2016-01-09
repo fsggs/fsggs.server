@@ -1,8 +1,10 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Web Socket Test</title>
+    <title>Web Socket Test 3</title>
+
+    <script src="js/cbor.js" type="text/javascript"></script>
 </head>
 <body>
 <script type="text/javascript">
@@ -11,10 +13,17 @@
         window.WebSocket = window.MozWebSocket;
     }
     if (window.WebSocket) {
-        socket = new WebSocket("{{websocketURI}}");
+        socket = new WebSocket("ws://127.0.0.1:32500/");
+        socket.binaryType = "arraybuffer";
         socket.onmessage = function (event) {
             var ta = document.getElementById('responseText');
-            ta.value = ta.value + '\n' + event.data
+            var message = "";
+            if (event.data.toString() == '[object ArrayBuffer]') {
+                message = CBOR.decode(event.data).testMessage;
+            } else {
+                message = event.data;
+            }
+            ta.value = ta.value + '\n' + message;
         };
         socket.onopen = function (event) {
             var ta = document.getElementById('responseText');
@@ -38,6 +47,16 @@
             alert("The socket is not open.");
         }
     }
+
+    function sendBinary() {
+        if (socket.readyState == WebSocket.OPEN) {
+            var message = CBOR.encode({testMessage: "Hello Server", packet: "Test"});
+            socket.send(message);
+            console.log('test1', CBOR.decode(message));
+        } else {
+            alert("The socket is not open.");
+        }
+    }
 </script>
 <form onsubmit="return false;">
     <label>
@@ -45,6 +64,8 @@
     </label>
     <input type="button" value="Send Web Socket Data"
            onclick="send(this.form.message.value)"/>
+    <input type="button" value="Send Web Socket Data"
+           onclick="sendBinary()"/>
     <h3>Output</h3>
     <label><textarea id="responseText" style="width:500px;height:300px;"></textarea></label>
 </form>

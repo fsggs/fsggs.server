@@ -11,7 +11,8 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
-import org.apache.log4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.BindException;
 import java.net.InetSocketAddress;
@@ -22,7 +23,7 @@ public class Application {
     public static final String APPLICATION_NAME = "FSGGS Server Application";
     public static final String APPLICATION_VERSION = "0.0.1";
 
-    public static final Logger logger = Logger.getLogger(Application.class);
+    public static final Logger logger = LoggerFactory.getLogger(Application.class);
 
     static public boolean SSL = System.getProperty("ssl") != null;
     static public int PORT = 32500;
@@ -57,6 +58,7 @@ public class Application {
     }
 
     protected void stop() {
+        logger.info("Server shutdown.");
         bossGroup.shutdownGracefully();
         workerGroup.shutdownGracefully();
     }

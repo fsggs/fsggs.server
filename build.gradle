@@ -59,4 +59,5 @@ dependencies {
     compile 'com.mitchellbosecke:pebble:2.0.0'
     compile 'org.slf4j:slf4j-log4j12:1.7.13'
     compile 'log4j:apache-log4j-extras:1.0'
+    compile 'co.nstant.in:cbor:0.7'
 }
