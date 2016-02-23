@@ -7,6 +7,8 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.websocketx.*;
 import io.netty.util.concurrent.GlobalEventExecutor;
 
+import java.lang.reflect.InvocationTargetException;
+
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 public class SocketServerHandler extends SimpleChannelInboundHandler<Object> {
@@ -15,7 +17,7 @@ public class SocketServerHandler extends SimpleChannelInboundHandler<Object> {
     public WebSocketServerHandshaker handshaker;
 
     @Override
-    public void messageReceived(ChannelHandlerContext context, Object message) {
+    public void messageReceived(ChannelHandlerContext context, Object message) throws IllegalAccessException, InstantiationException, InvocationTargetException {
         if (message instanceof FullHttpRequest) {
             new HttpServerHandler(this, context, (FullHttpRequest) message);
         } else if (message instanceof WebSocketFrame) {

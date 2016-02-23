@@ -6,21 +6,17 @@ import co.nstant.in.cbor.CborException;
 import co.nstant.in.cbor.model.Map;
 import co.nstant.in.cbor.model.UnicodeString;
 import com.fsggs.server.Application;
-import com.fsggs.server.core.network.BaseNetworkPackage;
-import com.fsggs.server.core.network.INetworkPackage;
-import com.fsggs.server.core.network.NetworkPackage;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufUtil;
-import io.netty.buffer.Unpooled;
+import com.fsggs.server.core.network.BaseNetworkPacket;
+import com.fsggs.server.core.network.INetworkPacket;
+import com.fsggs.server.core.network.NetworkPacket;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Objects;
 
 
-@NetworkPackage(name = "Test")
-public class TestPacket extends BaseNetworkPackage {
+@NetworkPacket(name = "Test")
+public class TestPacket extends BaseNetworkPacket {
 
     UnicodeString message;
 
@@ -29,38 +25,36 @@ public class TestPacket extends BaseNetworkPackage {
     }
 
     @Override
-    public INetworkPackage receive() {
+    public INetworkPacket receive() {
+        Application.logger.info("Receive: TestPacket");
+
         message = (UnicodeString) data.get(new UnicodeString("testMessage"));
 
         if (message != null && Objects.equals(message.toString(), "Hello Server")) {
             send("Hello Client");
         }
-
         return this;
     }
 
     @Override
-    public INetworkPackage send(String message) {
-        ByteArrayOutputStream temp = new ByteArrayOutputStream();
+    public INetworkPacket send(String message) {
+        ByteArrayOutputStream packet = new ByteArrayOutputStream();
 
         try {
-            new CborEncoder(temp).encode(new CborBuilder()
+            new CborEncoder(packet).encode(new CborBuilder()
                     .addMap()
                     .put(new UnicodeString("testMessage"), new UnicodeString(message))
                     .put(new UnicodeString("package"), new UnicodeString("Test"))
                     .end()
                     .build());
 
-            byte bytes[] = temp.toByteArray();
+            sendBuffer(packet);
+            broadcastBuffer(packet);
 
-            ByteBuf buffer = Unpooled.wrappedBuffer(bytes);
-            Application.logger.info("WebSocketFrameToByteBufDecoder encode - " + ByteBufUtil.hexDump(buffer));
-
-            context.channel().writeAndFlush(new BinaryWebSocketFrame(buffer));
+            Application.logger.info("Send: TestPacket");
         } catch (CborException e) {
             e.printStackTrace();
         }
-
         return this;
     }
 }

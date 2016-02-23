@@ -338,7 +338,7 @@ public class HttpServerHandler {
         // Add Pebble parser
         if (Objects.equals(fileExtension, "peb")) {
             // TODO:: HashMap to static Mapper
-            sendParsedPage(file, new HashMap<>(), context, request);
+            sendParsedPage(file, new HashMap<String, Object>(), context, request);
             return;
         }
 
@@ -392,7 +392,7 @@ public class HttpServerHandler {
 
             @Override
             public void operationComplete(ChannelProgressiveFuture future) {
-                Application.logger.info(future.channel() + " Transfer complete.");
+                //Application.logger.info(future.channel() + " Transfer complete.");
             }
         });
 

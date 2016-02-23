@@ -19,7 +19,9 @@
             var ta = document.getElementById('responseText');
             var message = "";
             if (event.data.toString() == '[object ArrayBuffer]') {
-                message = CBOR.decode(event.data).testMessage;
+                var data = CBOR.decode(event.data);
+                console.log('receive: ' + data.packet, data);
+                message = data.testMessage;
             } else {
                 message = event.data;
             }
@@ -52,7 +54,7 @@
         if (socket.readyState == WebSocket.OPEN) {
             var message = CBOR.encode({testMessage: "Hello Server", packet: "Test"});
             socket.send(message);
-            console.log('test1', CBOR.decode(message));
+            console.log('send: test1', CBOR.decode(message));
         } else {
             alert("The socket is not open.");
         }

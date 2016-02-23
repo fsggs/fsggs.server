@@ -1,12 +1,15 @@
 package com.fsggs.server.configs;
 
 import com.fsggs.server.Application;
+import com.fsggs.server.core.network.NetworkPacketRegister;
 
 public class InitApplicationConfig {
 
     public InitApplicationConfig(Application application) {
+
         ServerConfig sg = new ServerConfig();
         application.serverConfig = sg.getConfig();
+        Application.networkPackets = new NetworkPacketRegister().getNetworkPackets();
 
         // ssl
         if (application.serverConfig.containsKey("ssl")) {
