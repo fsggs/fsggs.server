@@ -52,7 +52,15 @@
 
     function sendBinary() {
         if (socket.readyState == WebSocket.OPEN) {
-            var message = CBOR.encode({testMessage: "Hello Server", packet: "Test"});
+            var message = CBOR.encode({
+                testMessage: "Hello Server",
+                packet: "Test",
+                test1: {test: 1, testi: 2},
+                test2: [],
+                test3: [1, 2, 1.2],
+                test4: 1,
+                test5: 1.2
+            });
             socket.send(message);
             console.log('send: test1', CBOR.decode(message));
         } else {

@@ -60,5 +60,8 @@ dependencies {
     compile 'org.slf4j:slf4j-log4j12:1.7.13'
     compile 'log4j:apache-log4j-extras:1.0'
     compile 'co.nstant.in:cbor:0.7'
-    compile 'org.reflections:reflections-maven:0.9.9-RC2'
+    compile 'org.reflections:reflections:0.9.10'
+    compile 'org.hibernate:hibernate-core:5.1.0.Final'
+    compile 'mysql:mysql-connector-java:5.1.38'
+    compile 'javax.transaction:jta:1.1'
 }

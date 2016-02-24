@@ -18,11 +18,18 @@ abstract public class BaseNetworkPacket implements INetworkPacket {
     final protected ChannelHandlerContext context;
     protected Map data;
 
+    public BaseNetworkPacket(ChannelHandlerContext context) {
+        this.context = context;
+    }
+
     public BaseNetworkPacket(ChannelHandlerContext context, Map data) {
         this.context = context;
         this.data = data;
+    }
 
-        receive();
+    public INetworkPacket setData(Map data) {
+        this.data = data;
+        return this;
     }
 
     protected void sendBuffer(ByteArrayOutputStream output) {
@@ -42,7 +49,7 @@ abstract public class BaseNetworkPacket implements INetworkPacket {
         for (Channel channel : SocketServerHandler.channels) {
             if (channel != context.channel() && !me) {
                 channel.writeAndFlush(new BinaryWebSocketFrame(buffer));
-            } else if (channel == context.channel() && me) {
+            } else if (me) {
                 channel.writeAndFlush(new BinaryWebSocketFrame(buffer));
             }
         }

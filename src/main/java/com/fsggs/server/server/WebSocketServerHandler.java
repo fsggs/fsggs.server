@@ -7,18 +7,20 @@ import co.nstant.in.cbor.model.Map;
 import co.nstant.in.cbor.model.UnicodeString;
 import com.fsggs.server.Application;
 import com.fsggs.server.core.network.INetworkPacket;
-import com.fsggs.server.packets.TestPacket;
+import com.fsggs.server.core.network.NetworkPacketParam;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.*;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.List;
+import java.util.Set;
+
+import static org.reflections.ReflectionUtils.*;
 
 public class WebSocketServerHandler {
 
@@ -61,25 +63,48 @@ public class WebSocketServerHandler {
 
         ByteArrayInputStream encodedData = new ByteArrayInputStream(bytes);
 
-        List<DataItem> dataItems;
         try {
-            dataItems = new CborDecoder(encodedData).decode();
-            Map data = (Map) dataItems.get(0);
-            String packetName = (data.get(new UnicodeString("packet"))).toString();
-
-            if (Application.networkPackets.containsKey(packetName)) {
-                try {
-                    Class<?> packetClass = Application.networkPackets.get(packetName);
-                    packetClass.getConstructor(ChannelHandlerContext.class, Map.class).newInstance(context, data);
-                } catch (NoSuchMethodException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                Application.logger.warn("Receive unregistered packet: \"" + packetName + "Packet\"!");
-            }
+            handlerWebSocketPacketManager(context, encodedData);
         } catch (CborException e) {
             e.printStackTrace();
             Application.logger.warn("Receive unknown packet!");
+        }
+    }
+
+    private void handlerWebSocketPacketManager(ChannelHandlerContext context, ByteArrayInputStream encodedData)
+            throws CborException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        List<DataItem> dataItems;
+        dataItems = new CborDecoder(encodedData).decode();
+        Map data = (Map) dataItems.get(0);
+        String packetName = (data.get(new UnicodeString("packet"))).toString();
+
+        if (Application.networkPackets.containsKey(packetName)) {
+            try {
+                Class<?> packetClass = Application.networkPackets.get(packetName);
+                INetworkPacket packet = (INetworkPacket) packetClass.getConstructor(ChannelHandlerContext.class)
+                        .newInstance(context);
+
+                @SuppressWarnings("unchecked")
+                Set<Method> setters = getAllMethods(
+                        packetClass,
+                        withModifier(Modifier.PUBLIC),
+                        withPrefix("set"),
+                        withParametersCount(1),
+                        withAnnotation(NetworkPacketParam.class)
+                );
+
+                for (Method method : setters) {
+                    String annotatedParam = ((NetworkPacketParam) method.getDeclaredAnnotations()[0]).value();
+                    method.invoke(packet, data.get(new UnicodeString(annotatedParam)));
+                }
+
+                packet.setData(data);
+                packet.receive();
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            }
+        } else {
+            Application.logger.warn("Receive unregistered packet: \"" + packetName + "Packet\"!");
         }
     }
 
@@ -93,8 +118,14 @@ public class WebSocketServerHandler {
     }
 
     public static void broadcast(ChannelHandlerContext context, String message) {
+        broadcast(context, message, false);
+    }
+
+    public static void broadcast(ChannelHandlerContext context, String message, Boolean me) {
         for (Channel channel : SocketServerHandler.channels) {
-            if (channel != context.channel()) {
+            if (channel != context.channel() && !me) {
+                channel.writeAndFlush(new TextWebSocketFrame(message));
+            } else if (me) {
                 channel.writeAndFlush(new TextWebSocketFrame(message));
             }
         }

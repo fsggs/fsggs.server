@@ -2,7 +2,9 @@ package com.fsggs.server;
 
 import com.fsggs.server.configs.InitApplicationConfig;
 import com.fsggs.server.core.network.INetworkPacket;
+import com.fsggs.server.entities.User;
 import com.fsggs.server.server.SocketServerInit;
+import com.fsggs.server.utils.HibernateUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
@@ -12,11 +14,13 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
+import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.BindException;
 import java.net.InetSocketAddress;
+import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 
@@ -42,6 +46,20 @@ public class Application {
 
     public Application() {
         new InitApplicationConfig(this);
+
+//        Session session = HibernateUtil.getSessionFactory().openSession();
+//
+//        session.beginTransaction();
+//        User user = new User();
+//
+//        user.setLogin("admin");
+//        user.setPassword("admin");
+//        user.setRegisterTime(new Date());
+//        user.setLoginTime(new Date());
+//
+//        session.save(user);
+//        session.getTransaction().commit();
+
     }
 
     public ChannelFuture start(InetSocketAddress address) throws Exception {

@@ -19,7 +19,7 @@ public class NetworkPacketRegister {
             for (Annotation annotation : networkPacketClass.getDeclaredAnnotations()) {
                 if (annotation instanceof NetworkPacket
                         && networkPacketClass.getSuperclass().isAssignableFrom(BaseNetworkPacket.class)) {
-                    String networkPacketName = ((NetworkPacket) annotation).name();
+                    String networkPacketName = ((NetworkPacket) annotation).value();
                     networkPackets.put(networkPacketName, networkPacketClass);
                 }
             }
