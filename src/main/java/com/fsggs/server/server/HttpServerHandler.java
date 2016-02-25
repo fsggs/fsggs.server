@@ -1,6 +1,7 @@
 package com.fsggs.server.server;
 
 import com.fsggs.server.Application;
+import com.fsggs.server.core.session.SessionManager;
 import com.fsggs.server.utils.FileUtils;
 import com.mitchellbosecke.pebble.PebbleEngine;
 import com.mitchellbosecke.pebble.error.PebbleException;
@@ -94,7 +95,9 @@ public class HttpServerHandler {
         if (!Files.exists(path)) {
             try {
                 URL resourceURL = ClassLoader.getSystemResource(Application.PUBLIC_DIR + sanitizeUri(uri));
-                if (resourceURL == null) throw new IOException("Invalid URL: " + uri);
+                if (resourceURL == null) {
+                    throw new IOException("Invalid URL: " + uri);
+                }
 
                 if (FileUtils.isRunnedInJar()) {
                     File file;
@@ -175,8 +178,11 @@ public class HttpServerHandler {
         if (handler.handshaker == null) {
             WebSocketServerHandshakerFactory.sendUnsupportedVersionResponse(context.channel());
         } else {
-            SocketServerHandler.channels.add(context.channel());
-            handler.handshaker.handshake(context.channel(), request);
+            Channel channel = context.channel();
+            SocketServerHandler.channels.add(channel);
+            SessionManager.add(channel);
+            handler.handshaker.handshake(channel, request);
+            System.out.println("FSGGS: Client " + channel.toString() + " connect.");
         }
     }
 

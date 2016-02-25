@@ -1,10 +1,9 @@
 package com.fsggs.server;
 
 import com.fsggs.server.configs.InitApplicationConfig;
-import com.fsggs.server.core.network.INetworkPacket;
-import com.fsggs.server.entities.User;
+import com.fsggs.server.configs.InitApplicationDB;
+import com.fsggs.server.configs.InitLogoServer;
 import com.fsggs.server.server.SocketServerInit;
-import com.fsggs.server.utils.HibernateUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
@@ -14,21 +13,22 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
-import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.BindException;
 import java.net.InetSocketAddress;
-import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 
 public class Application {
-    public static final String APPLICATION_NAME = "FSGGS Server Application";
-    public static final String APPLICATION_VERSION = "0.0.1";
+    public static final String APPLICATION_NAME = "FSGGS Server";
+    public static final String APPLICATION_VERSION = "0.0.2";
+    public static final String APPLICATION_VERSION_ID = "Solar";
 
     public static final Logger logger = LoggerFactory.getLogger(Application.class);
+    public static SessionFactory db;
 
     static public boolean SSL = System.getProperty("ssl") != null;
     static public int PORT = 32500;
@@ -46,20 +46,21 @@ public class Application {
 
     public Application() {
         new InitApplicationConfig(this);
+        new InitLogoServer(this);
+        db = (new InitApplicationDB(this)).getSessionFactory();
 
-//        Session session = HibernateUtil.getSessionFactory().openSession();
+//        Session session = Application.db.openSession();
 //
 //        session.beginTransaction();
 //        User user = new User();
 //
 //        user.setLogin("admin");
 //        user.setPassword("admin");
-//        user.setRegisterTime(new Date());
-//        user.setLoginTime(new Date());
+//        user.setRegisterDate(new Date());
+//        user.setLoginDate(new Date());
 //
 //        session.save(user);
 //        session.getTransaction().commit();
-
     }
 
     public ChannelFuture start(InetSocketAddress address) throws Exception {
@@ -78,6 +79,7 @@ public class Application {
     }
 
     protected void stop() {
+        db.close();
         logger.info("Server shutdown.");
         bossGroup.shutdownGracefully();
         workerGroup.shutdownGracefully();
@@ -89,7 +91,7 @@ public class Application {
         try {
             ChannelFuture future = server.start(new InetSocketAddress(IP, PORT));
 
-            logger.info("Open your web browser and navigate to " + (SSL ? "https" : "http") + "://" +
+            System.out.println("FSGGS: Open your web browser and navigate to " + (SSL ? "https" : "http") + "://" +
                     (Objects.equals(IP, "0.0.0.0") ? "127.0.0.1" : IP) + ":" + PORT + '/');
 
             future.channel().closeFuture().syncUninterruptibly();

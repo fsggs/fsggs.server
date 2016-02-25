@@ -1,3 +1,7 @@
+plugins {
+    id 'edu.sc.seis.launch4j' version '1.6.1'
+}
+
 repositories {
     mavenCentral()
 }
@@ -29,7 +33,6 @@ jar {
                 'Implementation-Version': version,
                 'Provider': 'Gradle'
     }
-
 }
 
 tasks.withType(JavaCompile) { task ->
@@ -52,6 +55,18 @@ task fatJar(type: Jar) {
 
 tasks.build.dependsOn fatJar
 
+copyL4jLib.dependsOn fatJar
+//fatJarPrepareFiles.dependsOn jar
+
+launch4j {
+    mainClassName = config.package + '.' + config.application
+    icon = "../../src/main/resources/public/favicon.ico"
+    copyConfigurable = project.tasks.fatJar.outputs.files
+    jar = "lib/${project.tasks.fatJar.archiveName}"
+    headerType = "console"
+    version = version
+}
+
 dependencies {
     compile 'org.javassist:javassist:3.20.0-GA'
     compile 'io.netty:netty-all:5.0.0.Alpha2'
@@ -64,4 +79,5 @@ dependencies {
     compile 'org.hibernate:hibernate-core:5.1.0.Final'
     compile 'mysql:mysql-connector-java:5.1.38'
     compile 'javax.transaction:jta:1.1'
+    compile 'org.hibernate:hibernate-c3p0:5.1.0.Final'
 }

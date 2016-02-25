@@ -19,6 +19,10 @@ public class FileUtils {
         Path path;
         if (isRunnedInJar()) {
             path = Paths.get(System.getProperty("java.class.path"));
+            if (path.toString().contains(".exe;")) {
+                path = Paths.get(System.getProperty("user.dir"));
+                return path.toAbsolutePath();
+            }
             return path.toAbsolutePath().getParent();
         } else {
             path = Paths.get(System.getProperty("user.dir"));

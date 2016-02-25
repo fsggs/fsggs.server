@@ -33,7 +33,6 @@ public class TestPacket extends BaseNetworkPacket {
         Application.logger.info("Receive: TestPacket: " + message);
 
         //message = (UnicodeString) data.get(new UnicodeString("testMessage"));
-
         if (message != null && Objects.equals(message.toString(), "Hello Server")) {
             send("Hello Client");
         }

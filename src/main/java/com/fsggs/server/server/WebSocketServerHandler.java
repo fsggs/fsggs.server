@@ -8,6 +8,7 @@ import co.nstant.in.cbor.model.UnicodeString;
 import com.fsggs.server.Application;
 import com.fsggs.server.core.network.INetworkPacket;
 import com.fsggs.server.core.network.NetworkPacketParam;
+import com.fsggs.server.core.session.SessionManager;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -34,7 +35,10 @@ public class WebSocketServerHandler {
     private void handlerWebSocketFrame(ChannelHandlerContext context, WebSocketFrame frame) throws IllegalAccessException, InstantiationException, InvocationTargetException {
         // Check for closing frame
         if (frame instanceof CloseWebSocketFrame) {
-            handler.handshaker.close(context.channel(), (CloseWebSocketFrame) frame.retain());
+            Channel channel = context.channel();
+            System.out.println("FSGGS: Client " + channel.toString() + " disconnected.");
+            SessionManager.remove(channel);
+            handler.handshaker.close(channel, (CloseWebSocketFrame) frame.retain());
             return;
         }
         if (frame instanceof PingWebSocketFrame) {

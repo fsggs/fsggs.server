@@ -7,7 +7,6 @@ import java.io.*;
 import java.util.*;
 
 public class ServerConfig {
-
     final private String serverConfigFile = "server.properties";
 
     final private Properties properties = new Properties();
@@ -39,7 +38,6 @@ public class ServerConfig {
 
     public ServerConfig saveConfig() throws FileNotFoundException, IOException {
         File configFile = new File(serverConfigFile);
-
         OutputStream outputStream = new FileOutputStream(FileUtils.getApplicationPath().toString() + '/' + configFile);
         properties.store(outputStream, "Server config");
         outputStream.close();
