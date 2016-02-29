@@ -50,4 +50,25 @@ public class Authority implements Serializable {
     public void setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Authority authority = (Authority) o;
+
+        return user != null ? user.equals(authority.user) : authority.user == null
+                && (group != null ? group.equals(authority.group) : authority.group == null
+                && (createdDate != null ? createdDate.equals(authority.createdDate) : authority.createdDate == null
+        ));
+    }
+
+    @Override
+    public int hashCode() {
+        int result = user != null ? user.hashCode() : 0;
+        result = 31 * result + (group != null ? group.hashCode() : 0);
+        result = 31 * result + (createdDate != null ? createdDate.hashCode() : 0);
+        return result;
+    }
 }

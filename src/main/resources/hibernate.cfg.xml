@@ -18,7 +18,7 @@
         <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
         <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/test</property>
         <property name="hibernate.connection.username">root</property>
-        <property name="hibernate.connection.password">root</property>
+        <property name="hibernate.connection.password"></property>
 
         <!-- C3P0 -->
         <property name="hibernate.c3p0.min_size">10</property>
@@ -36,6 +36,7 @@
 
         <!-- Echo all executed SQL to stdout -->
         <property name="show_sql">true</property>
+        <property name="hibernate.format_sql">true</property>
 
         <property name="hbm2ddl.auto">create-drop</property>
 

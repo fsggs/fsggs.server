@@ -6,7 +6,7 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity()
-@Table(name = "master_assignment")
+@Table(name = "master_server")
 public class Server {
     @Id
     @GeneratedValue(generator = "increment")

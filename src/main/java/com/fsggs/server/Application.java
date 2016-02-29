@@ -3,6 +3,7 @@ package com.fsggs.server;
 import com.fsggs.server.configs.InitApplicationConfig;
 import com.fsggs.server.configs.InitApplicationDB;
 import com.fsggs.server.configs.InitLogoServer;
+import com.fsggs.server.core.network.ControllerManager;
 import com.fsggs.server.server.SocketServerInit;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -36,8 +37,10 @@ public class Application {
     public static String WEBSOCKET_PATH = "";
     public static String PUBLIC_DIR = "public";
 
+
     public Map<String, String> serverConfig;
     static public Map<String, Class<?>> networkPackets;
+    static public ControllerManager controllerManager;
 
     private final EventLoopGroup bossGroup = new NioEventLoopGroup(1);
     private final EventLoopGroup workerGroup = new NioEventLoopGroup();

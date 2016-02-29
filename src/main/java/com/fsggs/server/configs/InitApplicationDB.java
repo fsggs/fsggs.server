@@ -52,6 +52,7 @@ public class InitApplicationDB {
         config.setProperty("hibernate.show_sql", application.serverConfig.get("db_show_sql"));
         config.setProperty("hibernate.dialect", application.serverConfig.get("db_dialect"));
         config.setProperty("hibernate.hbm2ddl.auto", application.serverConfig.get("db_hbm2ddl_auto"));
+        config.setProperty("hibernate.format_sql", "true");
         config.setProperty("hibernate.current_session_context_class", "thread");
 
         // C3P0

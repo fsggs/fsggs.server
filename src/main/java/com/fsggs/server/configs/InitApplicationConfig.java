@@ -1,6 +1,7 @@
 package com.fsggs.server.configs;
 
 import com.fsggs.server.Application;
+import com.fsggs.server.core.network.ControllerManager;
 import com.fsggs.server.core.network.NetworkPacketRegister;
 
 public class InitApplicationConfig {
@@ -10,6 +11,7 @@ public class InitApplicationConfig {
         ServerConfig sg = new ServerConfig();
         application.serverConfig = sg.getConfig();
         Application.networkPackets = new NetworkPacketRegister().getNetworkPackets();
+        Application.controllerManager = new ControllerManager();
 
         // ssl
         if (application.serverConfig.containsKey("ssl")) {
