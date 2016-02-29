@@ -44,5 +44,13 @@ public class InitApplicationConfig {
             Application.WEBSOCKET_PATH = "";
             sg.addPropertyToServerConfig("gate", Application.WEBSOCKET_PATH);
         }
+
+        // ssl
+        if (application.serverConfig.containsKey("client_url")) {
+            Application.CLIENT_URL = (application.serverConfig.get("client_url"));
+        } else {
+            Application.CLIENT_URL = "*";
+            sg.addPropertyToServerConfig("client_url", Application.CLIENT_URL);
+        }
     }
 }

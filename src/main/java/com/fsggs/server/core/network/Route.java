@@ -11,4 +11,6 @@ public @interface Route {
     String[] PATH() default {};
 
     String METHOD() default "";
+
+    String TYPE() default "text/html; charset=UTF-8";
 }

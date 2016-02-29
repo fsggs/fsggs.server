@@ -17,6 +17,7 @@ import io.netty.util.CharsetUtil;
 
 import javax.activation.MimetypesFileTypeMap;
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.file.*;
@@ -60,18 +61,33 @@ public class HttpServerHandler {
             return;
         }
 
+        if (Application.controllerManager.hasController(request.uri(), request.method())) {
+            try {
+                String response = Application.controllerManager.runController(request.uri(), request.method());
+                sendPage(response, context, request,
+                        Application.controllerManager.getContentType(request.uri()));
+                return;
+            } catch (NoSuchMethodException
+                    | IllegalAccessException
+                    | InstantiationException
+                    | InvocationTargetException
+                    | IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         // Allow only GET methods.
         if (request.method() != GET) {
             sendErrorPage(FORBIDDEN, context, request);
             return;
         }
 
-        if ("/".equals(request.uri())) {
-            Map<String, Object> data = new HashMap<>();
-
-            sendParsedPage("public/index.peb", data, context, request);
-            return;
-        }
+//        if ("/".equals(request.uri())) {
+//            Map<String, Object> data = new HashMap<>();
+//
+//            sendParsedPage("public/index.peb", data, context, request);
+//            return;
+//        }
 
         // Send the demo page and favicon.ico
 //        if ("/test-websocket".equals(request.uri())) {
@@ -207,10 +223,22 @@ public class HttpServerHandler {
         sendPage(buffer, context, request);
     }
 
+    private static void sendPage(String response, ChannelHandlerContext context, FullHttpRequest request, String type)
+            throws IOException {
+        ByteBuf buffer;
+        buffer = Unpooled.copiedBuffer(response.getBytes());
+        sendPage(buffer, context, request, type);
+    }
+
     private static void sendPage(ByteBuf buffer, ChannelHandlerContext context, FullHttpRequest request) {
+        sendPage(buffer, context, request, "text/html; charset=UTF-8");
+    }
+
+    private static void sendPage(ByteBuf buffer, ChannelHandlerContext context, FullHttpRequest request, String type) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, buffer);
 
-        response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
+        response.headers().set(CONTENT_TYPE, type);
+        response.headers().set(ACCESS_CONTROL_ALLOW_ORIGIN, Application.CLIENT_URL);
         HttpHeaderUtil.setContentLength(response, buffer.readableBytes());
 
         sendHttpResponse(context, request, response);
@@ -257,6 +285,7 @@ public class HttpServerHandler {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, content);
 
         response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
+        response.headers().set(ACCESS_CONTROL_ALLOW_ORIGIN, Application.CLIENT_URL);
         HttpHeaderUtil.setContentLength(response, content.readableBytes());
 
         sendHttpResponse(context, request, response);

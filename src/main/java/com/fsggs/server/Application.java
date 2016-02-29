@@ -36,6 +36,7 @@ public class Application {
     static public String IP = "0.0.0.0";
     public static String WEBSOCKET_PATH = "";
     public static String PUBLIC_DIR = "public";
+    public static String CLIENT_URL = "*";
 
 
     public Map<String, String> serverConfig;

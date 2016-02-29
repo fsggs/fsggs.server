@@ -1,6 +1,5 @@
 package com.fsggs.server.core.network;
 
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import org.reflections.Reflections;
 
@@ -30,6 +29,8 @@ public class ControllerManager {
 
     private Map<String, RouteMethod> routes = new HashMap<>();
 
+    private Map<String, String> contentTypes = new HashMap<>();
+
     public ControllerManager() {
         Reflections reflections = new Reflections("com.fsggs.server.controllers");
         Set<Class<?>> classes = reflections.getTypesAnnotatedWith(Controller.class);
@@ -49,6 +50,7 @@ public class ControllerManager {
                     if (annotation instanceof Route) {
                         String[] routePath = ((Route) annotation).PATH();
                         String httpMethod = ((Route) annotation).METHOD();
+                        String contentType = ((Route) annotation).TYPE();
 
                         for (String path : routePath) {
                             switch (httpMethod) {
@@ -82,11 +84,26 @@ public class ControllerManager {
                                 default:
                                     routes.put(path, new RouteMethod(path, controllerClass, method));
                             }
+                            contentTypes.put(path, contentType);
                         }
                     }
                 }
             }
         }
+    }
+
+    public boolean hasController(String path, HttpMethod httpMethod) {
+        return httpMethod == HEAD && headRoutes.containsKey(path)
+                || httpMethod == OPTIONS && optionsRoutes.containsKey(path)
+                || httpMethod == GET && getRoutes.containsKey(path)
+                || httpMethod == POST && postRoutes.containsKey(path)
+                || httpMethod == PATCH && patchRoutes.containsKey(path)
+                || httpMethod == PUT && putRoutes.containsKey(path)
+                || httpMethod == DELETE && deleteRoutes.containsKey(path)
+                || httpMethod == TRACE && traceRoutes.containsKey(path)
+                || httpMethod == CONNECT && connectRoutes.containsKey(path)
+                || routes.containsKey(path);
+
     }
 
     public String runController(String path, HttpMethod httpMethod)
@@ -128,9 +145,13 @@ public class ControllerManager {
     private String runController(Map<String, RouteMethod> routesMap, String path)
             throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         BaseController controller = (BaseController) (routesMap.get(path).controller)
-                .getConstructor(ChannelHandlerContext.class)
+                .getConstructor()
                 .newInstance();
         return (String) routesMap.get(path).method.invoke(controller);
+    }
+
+    public String getContentType(String uri) {
+        return contentTypes.get(uri);
     }
 
     private class RouteMethod {
