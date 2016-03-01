@@ -112,7 +112,9 @@ public class HttpServerHandler {
             try {
                 URL resourceURL = ClassLoader.getSystemResource(Application.PUBLIC_DIR + sanitizeUri(uri));
                 if (resourceURL == null) {
-                    throw new IOException("Invalid URL: " + uri);
+                    sendErrorPage(NOT_FOUND, context, request);
+                    Application.logger.error("Invalid URL: " + uri);
+                    return;
                 }
 
                 if (FileUtils.isRunnedInJar()) {

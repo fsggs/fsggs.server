@@ -38,10 +38,9 @@
         <property name="show_sql">true</property>
         <property name="hibernate.format_sql">true</property>
 
-        <property name="hbm2ddl.auto">create-drop</property>
+        <property name="hbm2ddl.auto">validate</property>
 
         <mapping class="com.fsggs.server.entities.auth.User"/>
-        <mapping class="com.fsggs.server.entities.auth.Authority"/>
         <mapping class="com.fsggs.server.entities.master.Server"/>
     </session-factory>
 

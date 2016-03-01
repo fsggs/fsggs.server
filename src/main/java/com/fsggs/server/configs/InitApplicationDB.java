@@ -1,9 +1,9 @@
 package com.fsggs.server.configs;
 
 import com.fsggs.server.Application;
-import com.fsggs.server.entities.auth.Authority;
 import com.fsggs.server.entities.auth.User;
 import com.fsggs.server.entities.master.Server;
+import org.flywaydb.core.Flyway;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -16,6 +16,7 @@ public class InitApplicationDB {
 
     public InitApplicationDB(Application application) {
         this.application = application;
+        this.applyMigration();
         sessionFactory = buildSessionFactory();
     }
 
@@ -41,6 +42,22 @@ public class InitApplicationDB {
         sessionFactory.close();
     }
 
+    public InitApplicationDB applyMigration() {
+        Flyway flyway = new Flyway();
+        flyway.setLocations("db/migration/mysql");
+        flyway.setTable("system_migrations");
+        flyway.setSqlMigrationSeparator("_");
+        flyway.setSqlMigrationPrefix("m");
+        flyway.setRepeatableSqlMigrationPrefix("r");
+        flyway.setDataSource(
+                application.serverConfig.get("db_url"),
+                application.serverConfig.get("db_user"),
+                application.serverConfig.get("db_password")
+        );
+        flyway.migrate();
+        return this;
+    }
+
     private Configuration getConfiguration() {
         registerEntity();
         //config.setProperty("hibernate.bytecode.use_reflection_optimizer", "false");
@@ -51,7 +68,7 @@ public class InitApplicationDB {
         config.setProperty("hibernate.connection.pool_size", application.serverConfig.get("db_pool_size"));
         config.setProperty("hibernate.show_sql", application.serverConfig.get("db_show_sql"));
         config.setProperty("hibernate.dialect", application.serverConfig.get("db_dialect"));
-        config.setProperty("hibernate.hbm2ddl.auto", application.serverConfig.get("db_hbm2ddl_auto"));
+        config.setProperty("hibernate.hbm2ddl.auto", "validate");
         config.setProperty("hibernate.format_sql", "true");
         config.setProperty("hibernate.current_session_context_class", "thread");
 
@@ -67,7 +84,6 @@ public class InitApplicationDB {
 
     private void registerEntity() {
         config.addAnnotatedClass(User.class);
-        config.addAnnotatedClass(Authority.class);
         config.addAnnotatedClass(Server.class);
     }
 }

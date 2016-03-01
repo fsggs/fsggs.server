@@ -3,6 +3,7 @@ package com.fsggs.server;
 import com.fsggs.server.configs.InitApplicationConfig;
 import com.fsggs.server.configs.InitApplicationDB;
 import com.fsggs.server.configs.InitLogoServer;
+import com.fsggs.server.core.db.DAOFactory;
 import com.fsggs.server.core.network.ControllerManager;
 import com.fsggs.server.server.SocketServerInit;
 import io.netty.bootstrap.ServerBootstrap;
@@ -30,6 +31,7 @@ public class Application {
 
     public static final Logger logger = LoggerFactory.getLogger(Application.class);
     public static SessionFactory db;
+    public static DAOFactory dao;
 
     static public boolean SSL = System.getProperty("ssl") != null;
     static public int PORT = 32500;
@@ -52,19 +54,7 @@ public class Application {
         new InitApplicationConfig(this);
         new InitLogoServer(this);
         db = (new InitApplicationDB(this)).getSessionFactory();
-
-//        Session session = Application.db.openSession();
-//
-//        session.beginTransaction();
-//        User user = new User();
-//
-//        user.setLogin("admin");
-//        user.setPassword("admin");
-//        user.setRegisterDate(new Date());
-//        user.setLoginDate(new Date());
-//
-//        session.save(user);
-//        session.getTransaction().commit();
+        dao = DAOFactory.getInstance();
     }
 
     public ChannelFuture start(InetSocketAddress address) throws Exception {

@@ -7,8 +7,10 @@ import com.fsggs.server.Application;
 import com.fsggs.server.core.network.BaseController;
 import com.fsggs.server.core.network.Controller;
 import com.fsggs.server.core.network.Route;
+import com.fsggs.server.entities.master.Server;
 
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -45,19 +47,10 @@ public class MasterController extends BaseController {
         List<Server> servers = new LinkedList<>();
 
         public VersionJSON() {
-            servers.add(new Server("Test server", "ws://127.0.0.1:32500"));
-        }
-
-        private class Server implements Serializable {
-            @JsonProperty
-            public String name;
-
-            @JsonProperty
-            public String address;
-
-            public Server(String name, String address) {
-                this.name = name;
-                this.address = address;
+            try {
+                servers = Application.dao.getServerDAO().getAllServersScope(0, 10);
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
         }
     }

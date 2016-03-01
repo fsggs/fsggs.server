@@ -4,10 +4,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 @Entity()
 @Table(name = "auth_user", uniqueConstraints = {
@@ -37,15 +34,14 @@ public class User implements Serializable {
     @Column(name = "status")
     private int status;
 
+    @Column(name = "access")
+    private int access;
+
     @Column(name = "session")
     private int session;
 
     @Column(name = "token")
     private int token;
-
-    @OneToMany(cascade={CascadeType.ALL})
-    @JoinColumn(name="user_id")
-    private List<Authority> authority;
 
     public User() {
     }
@@ -100,6 +96,7 @@ public class User implements Serializable {
         this.loginDate = loginDate;
     }
 
+
     public int getStatus() {
         return status;
     }
@@ -108,6 +105,16 @@ public class User implements Serializable {
         this.status = status;
     }
 
+
+    public int getAccess() {
+        return access;
+    }
+
+    public void setAccess(int access) {
+        this.access = access;
+    }
+
+
     public int getSession() {
         return session;
     }
@@ -115,6 +122,7 @@ public class User implements Serializable {
     public void setSession(int session) {
         this.session = session;
     }
+
 
     public int getToken() {
         return token;

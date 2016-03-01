@@ -69,16 +69,20 @@ launch4j {
 
 dependencies {
     compile 'org.javassist:javassist:3.20.0-GA'
-    compile 'io.netty:netty-all:5.0.0.Alpha2'
-    compile 'com.jcraft:jzlib:1.1.3'
-    compile 'com.mitchellbosecke:pebble:2.0.0'
+    compile 'org.reflections:reflections:0.9.10'
     compile 'org.slf4j:slf4j-log4j12:1.7.13'
     compile 'log4j:apache-log4j-extras:1.0'
+    compile 'com.jcraft:jzlib:1.1.3'
+
+    compile 'io.netty:netty-all:5.0.0.Alpha2'
+    compile 'com.mitchellbosecke:pebble:2.0.0'
+
     compile 'co.nstant.in:cbor:0.7'
-    compile 'org.reflections:reflections:0.9.10'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.7.2'
+
     compile 'org.hibernate:hibernate-core:5.1.0.Final'
+    compile 'org.hibernate:hibernate-c3p0:5.1.0.Final'
     compile 'mysql:mysql-connector-java:5.1.38'
     compile 'javax.transaction:jta:1.1'
-    compile 'org.hibernate:hibernate-c3p0:5.1.0.Final'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.7.2'
+    compile 'org.flywaydb:flyway-core:4.0'
 }
