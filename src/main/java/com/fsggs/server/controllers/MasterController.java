@@ -19,8 +19,12 @@ public class MasterController extends BaseController {
 
     @Route(PATH = "/api/getVersion.json", METHOD = "GET", TYPE = "application/json; charset=UTF-8")
     public String getVersion() {
+        int limit = 10;
+        int offset = (params.containsKey("page")) ? Integer.parseInt(params.get("page")) * 10 - 10 : 0;
+
+
         ObjectMapper mapper = new ObjectMapper();
-        VersionJSON versionJSON = new VersionJSON();
+        VersionJSON versionJSON = new VersionJSON(offset, limit);
 
         try {
             return mapper.writeValueAsString(versionJSON);
@@ -46,9 +50,9 @@ public class MasterController extends BaseController {
         @JsonProperty
         List<Server> servers = new LinkedList<>();
 
-        public VersionJSON() {
+        public VersionJSON(int offset, int limit) {
             try {
-                servers = Application.dao.getServerDAO().getAllServersScope(0, 10);
+                servers = Application.dao.getServerDAO().getAllServersScope(offset, limit);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
