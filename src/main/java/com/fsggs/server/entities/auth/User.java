@@ -1,22 +1,18 @@
 package com.fsggs.server.entities.auth;
 
-import org.hibernate.annotations.GenericGenerator;
+import com.fsggs.server.core.db.BaseModel;
+import org.hibernate.annotations.*;
+import org.hibernate.annotations.Cache;
 
 import javax.persistence.*;
-import java.io.Serializable;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.util.Date;
 
 @Entity()
-@Table(name = "auth_user", uniqueConstraints = {
-        @UniqueConstraint(columnNames = "id")
-})
-public class User implements Serializable {
-    @Id
-    @GeneratedValue(generator = "increment")
-    @GenericGenerator(name = "increment", strategy = "increment")
-    @Column(name = "id")
-    private Long id;
-
+@Table(name = "auth_user")
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+public class User extends BaseModel {
     @Column(name = "login")
     private String login;
 
@@ -49,15 +45,6 @@ public class User implements Serializable {
     public User(String login, String password) {
         this.login = login;
         this.password = password;
-    }
-
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
 

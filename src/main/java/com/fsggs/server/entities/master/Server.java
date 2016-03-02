@@ -2,21 +2,19 @@ package com.fsggs.server.entities.master;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.hibernate.annotations.GenericGenerator;
+import com.fsggs.server.core.db.BaseModel;
+import org.hibernate.annotations.*;
+import org.hibernate.annotations.Cache;
 
 import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.util.Date;
 
 @Entity()
 @Table(name = "master_server")
-public class Server {
-    @Id
-    @JsonIgnore
-    @GeneratedValue(generator = "increment")
-    @GenericGenerator(name = "increment", strategy = "increment")
-    @Column(name = "id")
-    private Long id;
-
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+public class Server extends BaseModel {
     @JsonProperty
     @Column(name = "name")
     private String name;
@@ -41,14 +39,6 @@ public class Server {
     public Server(String name, String address) {
         this.name = name;
         this.address = address;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
 

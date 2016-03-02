@@ -40,6 +40,13 @@
 
         <property name="hbm2ddl.auto">validate</property>
 
+        <property name="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.EhCacheRegionFactory
+        </property>
+        <property name="net.sf.ehcache.configurationResourceName">/ehcache.xml</property>
+        <property name="hibernate.cache.use_second_level_cache">true</property>
+        <property name="hibernate.cache.use_query_cache">true</property>
+        <property name="hibernate.cache.region_prefix"></property>
+
         <mapping class="com.fsggs.server.entities.auth.User"/>
         <mapping class="com.fsggs.server.entities.master.Server"/>
     </session-factory>

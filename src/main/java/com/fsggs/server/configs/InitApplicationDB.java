@@ -72,6 +72,13 @@ public class InitApplicationDB {
         config.setProperty("hibernate.format_sql", "true");
         config.setProperty("hibernate.current_session_context_class", "thread");
 
+        // Cache
+        config.setProperty("hibernate.cache.region.factory_class", "org.hibernate.cache.ehcache.EhCacheRegionFactory");
+        config.setProperty("net.sf.ehcache.configurationResourceName", "/ehcache.xml");
+        config.setProperty("hibernate.cache.region_prefix", "");
+        config.setProperty("hibernate.cache.use_second_level_cache", "true");
+        config.setProperty("hibernate.cache.use_query_cache", "true");
+
         // C3P0
         config.setProperty("hibernate.c3p0.min_size", "10");
         config.setProperty("hibernate.c3p0.max_size", "20");
