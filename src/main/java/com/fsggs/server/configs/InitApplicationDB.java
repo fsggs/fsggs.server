@@ -82,6 +82,7 @@ public class InitApplicationDB {
         config.setProperty("hibernate.cache.use_structured_entries", "true");
 
         // C3P0
+        config.setProperty("hibernate.connection.provider_class", "org.hibernate.c3p0.internal.C3P0ConnectionProvider");
         config.setProperty("hibernate.c3p0.min_size", "10");
         config.setProperty("hibernate.c3p0.max_size", "20");
         config.setProperty("hibernate.c3p0.acquire_increment", "1");

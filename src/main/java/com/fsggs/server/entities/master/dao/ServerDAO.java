@@ -1,6 +1,7 @@
 package com.fsggs.server.entities.master.dao;
 
 import com.fsggs.server.Application;
+import com.fsggs.server.core.db.DAOModel;
 import com.fsggs.server.entities.master.Server;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
@@ -12,7 +13,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ServerDAO implements IServerDAO {
+public class ServerDAO extends DAOModel implements IServerDAO {
     @Override
     public void addServer(Server server) throws SQLException {
         Session session = null;
@@ -94,8 +95,7 @@ public class ServerDAO implements IServerDAO {
             Criteria criteria = session.createCriteria(Server.class)
                     .setResultTransformer(Transformers.aliasToBean(Server.class));
 
-            //noinspection unchecked
-            servers = criteria.list();
+            servers = listAndCast(criteria);
         } catch (Exception e) {
             e.printStackTrace();
             Application.logger.warn("Error when getAll");
@@ -122,8 +122,7 @@ public class ServerDAO implements IServerDAO {
             criteria.setFirstResult(offset);
             criteria.setMaxResults(limit);
 
-            //noinspection unchecked
-            servers = (List<Server>) criteria.list();
+            servers = listAndCast(criteria);
         } catch (Exception e) {
             e.printStackTrace();
             Application.logger.warn("Error when getAllServersScope");
@@ -145,8 +144,7 @@ public class ServerDAO implements IServerDAO {
                     .add(Restrictions.eq("name", name))
                     .setResultTransformer(Transformers.aliasToBean(Server.class));
 
-            //noinspection unchecked
-            servers = criteria.list();
+            servers = listAndCast(criteria);
         } catch (Exception e) {
             e.printStackTrace();
             Application.logger.warn("Error when getServersByName");
@@ -168,8 +166,7 @@ public class ServerDAO implements IServerDAO {
                     .add(Restrictions.eq("address", address))
                     .setResultTransformer(Transformers.aliasToBean(Server.class));
 
-            //noinspection unchecked
-            servers = criteria.list();
+            servers = listAndCast(criteria);
         } catch (Exception e) {
             e.printStackTrace();
             Application.logger.warn("Error when getServersByAddress");
