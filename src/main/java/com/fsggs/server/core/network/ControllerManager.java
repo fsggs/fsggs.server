@@ -106,47 +106,50 @@ public class ControllerManager {
 
     }
 
-    public String runController(String path, HttpMethod httpMethod)
+    public String runController(String path, HttpMethod httpMethod,
+                                Map<String, String> params, Set<Cookie> cookies, Map<String, String> data)
             throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         if (httpMethod == HEAD && headRoutes.containsKey(path)) {
-            return runController(headRoutes, path);
+            return runController(headRoutes, path, params, cookies, data);
         }
         if (httpMethod == OPTIONS && optionsRoutes.containsKey(path)) {
-            return runController(optionsRoutes, path);
+            return runController(optionsRoutes, path, params, cookies, data);
         }
         if (httpMethod == GET && getRoutes.containsKey(path)) {
-            return runController(getRoutes, path);
+            return runController(getRoutes, path, params, cookies, data);
         }
         if (httpMethod == POST && postRoutes.containsKey(path)) {
-            return runController(postRoutes, path);
+            return runController(postRoutes, path, params, cookies, data);
         }
         if (httpMethod == PATCH && patchRoutes.containsKey(path)) {
-            return runController(patchRoutes, path);
+            return runController(patchRoutes, path, params, cookies, data);
         }
         if (httpMethod == PUT && putRoutes.containsKey(path)) {
-            return runController(putRoutes, path);
+            return runController(putRoutes, path, params, cookies, data);
         }
         if (httpMethod == DELETE && deleteRoutes.containsKey(path)) {
-            return runController(deleteRoutes, path);
+            return runController(deleteRoutes, path, params, cookies, data);
         }
         if (httpMethod == TRACE && traceRoutes.containsKey(path)) {
-            return runController(traceRoutes, path);
+            return runController(traceRoutes, path, params, cookies, data);
         }
         if (httpMethod == CONNECT && connectRoutes.containsKey(path)) {
-            return runController(connectRoutes, path);
+            return runController(connectRoutes, path, params, cookies, data);
         }
         if (routes.containsKey(path)) {
-            return runController(routes, path);
+            return runController(routes, path, params, cookies, data);
         }
 
         return null;
     }
 
-    private String runController(Map<String, RouteMethod> routesMap, String path)
+    private String runController(Map<String, RouteMethod> routesMap, String path,
+                                 Map<String, String> params, Set<Cookie> cookies, Map<String, String> data)
             throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         BaseController controller = (BaseController) (routesMap.get(path).controller)
                 .getConstructor()
                 .newInstance();
+        controller.setURI(path).setParams(params).setCookies(cookies).setData(data);
         return (String) routesMap.get(path).method.invoke(controller);
     }
 

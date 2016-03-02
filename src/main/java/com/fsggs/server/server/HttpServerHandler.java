@@ -9,7 +9,9 @@ import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
+import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.multipart.*;
 import io.netty.handler.codec.http.websocketx.*;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedFile;
@@ -52,8 +54,16 @@ public class HttpServerHandler {
             return;
         }
 
+        String uri = request.uri();
+        if (uri == null) {
+            sendErrorPage(FORBIDDEN, context, request);
+            return;
+        }
+
+        String uriPath = uri.split("\\?")[0];
+
         // Handshake
-        if (request.method() == GET && "/".equals(request.uri())
+        if (request.method() == GET && "/".equals(uriPath)
                 && request.headers().contains("Upgrade")
                 && Objects.equals(request.headers().get("Upgrade").toString().toLowerCase(), "websocket")) {
 
@@ -61,11 +71,53 @@ public class HttpServerHandler {
             return;
         }
 
-        if (Application.controllerManager.hasController(request.uri(), request.method())) {
+        if (Application.controllerManager.hasController(uriPath, request.method())) {
+            Map<String, List<String>> parameters = new QueryStringDecoder(request.uri()).parameters();
+            Map<String, String> params = new HashMap<>();
+            if (parameters.size() > 0) {
+                for (Map.Entry<String, List<String>> entry : parameters.entrySet()) {
+                    String key = entry.getKey();
+                    List<String> attribute = entry.getValue();
+                    for (String value : attribute) {
+                        params.put(key, value);
+                    }
+                }
+            }
+
+            CharSequence value = request.headers().get(HttpHeaderNames.COOKIE);
+            Set<Cookie> cookies = (Objects.equals(value, null))
+                    ? new TreeSet<Cookie>()
+                    : ServerCookieDecoder.decode(value.toString());
+
+            Map<String, String> httpData = new HashMap<>();
+
+            if (request.method() == HEAD || request.method() == POST || request.method() == PUT
+                    || request.method() == PATCH || request.method() == DELETE) {
+                HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(new DefaultHttpDataFactory(false), request);
+                List<InterfaceHttpData> data = decoder.getBodyHttpDatas();
+
+                for (InterfaceHttpData attributeData : data) {
+                    if (attributeData.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute) {
+                        Attribute attribute = (Attribute) attributeData;
+                        try {
+                            httpData.put(attributeData.getName(), attribute.getValue());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                decoder.destroy();
+            }
+
             try {
-                String response = Application.controllerManager.runController(request.uri(), request.method());
-                sendPage(response, context, request,
-                        Application.controllerManager.getContentType(request.uri()));
+                String response = Application.controllerManager.runController(
+                        uriPath,
+                        request.method(),
+                        params,
+                        cookies,
+                        httpData
+                );
+                sendPage(response, context, request, Application.controllerManager.getContentType(uriPath));
                 return;
             } catch (NoSuchMethodException
                     | IllegalAccessException
@@ -82,44 +134,23 @@ public class HttpServerHandler {
             return;
         }
 
-//        if ("/".equals(request.uri())) {
-//            Map<String, Object> data = new HashMap<>();
-//
-//            sendParsedPage("public/index.peb", data, context, request);
-//            return;
-//        }
-
-        // Send the demo page and favicon.ico
-//        if ("/test-websocket".equals(request.uri())) {
-//            Map<String, Object> data = new HashMap<>();
-//            data.put("websocketURI", getWebSocketLocation(request));
-//
-//            sendParsedPage("public/test-websocket.peb", data, context, request);
-//            return;
-//        }
-
         final String separator = FileSystems.getDefault().getSeparator();
-        final String uri = request.uri();
         final String rootPath = FileUtils.getApplicationPath() + separator + Application.PUBLIC_DIR;
 
-        if (uri == null) {
-            sendErrorPage(FORBIDDEN, context, request);
-            return;
-        }
 
-        Path path = Paths.get(rootPath + sanitizeUri(uri));
+        Path path = Paths.get(rootPath + sanitizeUri(uriPath));
         if (!Files.exists(path)) {
             try {
-                URL resourceURL = ClassLoader.getSystemResource(Application.PUBLIC_DIR + sanitizeUri(uri));
+                URL resourceURL = ClassLoader.getSystemResource(Application.PUBLIC_DIR + sanitizeUri(uriPath));
                 if (resourceURL == null) {
                     sendErrorPage(NOT_FOUND, context, request);
-                    Application.logger.error("Invalid URL: " + uri);
+                    Application.logger.error("Invalid URL [" + request.method() + "]: " + uri);
                     return;
                 }
 
                 if (FileUtils.isRunnedInJar()) {
                     File file;
-                    InputStream input = ClassLoader.getSystemResourceAsStream(Application.PUBLIC_DIR + sanitizeUri(uri));
+                    InputStream input = ClassLoader.getSystemResourceAsStream(Application.PUBLIC_DIR + sanitizeUri(uriPath));
 
                     String fileName = resourceURL.toString().substring(resourceURL.toString().lastIndexOf('/') + 1, resourceURL.toString().length());
 
@@ -138,12 +169,12 @@ public class HttpServerHandler {
                     file.deleteOnExit();
                 } else {
                     path = Paths.get(resourceURL.toURI());
-                    if (!Files.exists(path)) throw new IOException("Invalid URL: " + uri);
+                    if (!Files.exists(path)) throw new IOException("Invalid URL [" + request.method() + "]: " + uri);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
                 sendErrorPage(NOT_FOUND, context, request);
-                Application.logger.error("Invalid URL: " + uri);
+                Application.logger.error("Invalid URL [" + request.method() + "]: " + uri);
                 return;
             }
         }
@@ -155,10 +186,10 @@ public class HttpServerHandler {
             }
 
             if (Files.isDirectory(path)) {
-                if (uri.endsWith("/")) {
+                if (uriPath.endsWith("/")) {
                     sendListingPage(context, path);
                 } else {
-                    redirect(context, uri + '/');
+                    redirect(context, uriPath + '/');
                 }
                 sendListingPage(context, path);
                 return;
@@ -173,6 +204,17 @@ public class HttpServerHandler {
         }
 
         sendErrorPage(NOT_FOUND, context, request);
+    }
+
+    private static void appendDecoderResult(HttpObject o) {
+        DecoderResult result = o.decoderResult();
+        if (result.isSuccess()) {
+            return;
+        }
+
+        Application.logger.warn(".. WITH DECODER FAILURE: ");
+        Application.logger.warn(String.valueOf(result.cause()));
+        Application.logger.warn("\r\n");
     }
 
     /**

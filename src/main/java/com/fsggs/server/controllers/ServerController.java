@@ -7,6 +7,7 @@ import com.fsggs.server.core.network.Route;
 import com.mitchellbosecke.pebble.PebbleEngine;
 import com.mitchellbosecke.pebble.error.PebbleException;
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
+import io.netty.handler.codec.http.Cookie;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -36,5 +37,31 @@ public class ServerController extends BaseController {
         }
 
         return "";
+    }
+
+    @Route(PATH = "/test", METHOD = "POST")
+    public String testPage() {
+        String result = URI + BR;
+
+        result += "Params: " + BR;
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            result += key + ":" + value + BR;
+        }
+
+        result += BR + "POST:" + BR;
+        for (Map.Entry<String, String> entry : data.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            result += key + ":" + value + BR;
+        }
+
+        result += BR + "COOKIE:" + BR;
+        for (Cookie cookie : cookies) {
+            result += cookie.toString() + BR;
+        }
+
+        return result + BR;
     }
 }

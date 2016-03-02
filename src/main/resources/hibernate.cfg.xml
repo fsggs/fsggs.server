@@ -47,6 +47,9 @@
         <property name="hibernate.cache.use_query_cache">true</property>
         <property name="hibernate.cache.region_prefix"></property>
 
+        <property name="hibernate.generate_statistics">true</property>
+        <property name="hibernate.cache.use_structured_entries">true</property>
+
         <mapping class="com.fsggs.server.entities.auth.User"/>
         <mapping class="com.fsggs.server.entities.master.Server"/>
     </session-factory>

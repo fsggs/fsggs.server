@@ -78,6 +78,8 @@ public class InitApplicationDB {
         config.setProperty("hibernate.cache.region_prefix", "");
         config.setProperty("hibernate.cache.use_second_level_cache", "true");
         config.setProperty("hibernate.cache.use_query_cache", "true");
+        config.setProperty("hibernate.generate_statistics", "true");
+        config.setProperty("hibernate.cache.use_structured_entries", "true");
 
         // C3P0
         config.setProperty("hibernate.c3p0.min_size", "10");
