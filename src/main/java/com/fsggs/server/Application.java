@@ -6,6 +6,7 @@ import com.fsggs.server.configs.InitLogoServer;
 import com.fsggs.server.core.db.DAOFactory;
 import com.fsggs.server.core.network.ControllerManager;
 import com.fsggs.server.server.SocketServerInit;
+import com.fsggs.server.services.master.MasterService;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
@@ -41,9 +42,10 @@ public class Application {
     public static String CLIENT_URL = "*";
 
 
-    public Map<String, String> serverConfig;
+    static public Map<String, String> serverConfig;
     static public Map<String, Class<?>> networkPackets;
     static public ControllerManager controllerManager;
+    static public boolean run = false;
 
     private final EventLoopGroup bossGroup = new NioEventLoopGroup(1);
     private final EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -51,10 +53,13 @@ public class Application {
     private SslContext sslContext = null;
 
     public Application() {
-        new InitApplicationConfig(this);
+        new InitApplicationConfig();
         new InitLogoServer(this);
-        db = (new InitApplicationDB(this)).getSessionFactory();
+        db = (new InitApplicationDB()).getSessionFactory();
         dao = DAOFactory.getInstance();
+
+        /* Service Hack */
+        (new MasterService()).updateMasterServerTimeTask();
     }
 
     public ChannelFuture start(InetSocketAddress address) throws Exception {
@@ -73,6 +78,7 @@ public class Application {
     }
 
     protected void stop() {
+        Application.run = false;
         db.close();
         logger.info("Server shutdown.");
         bossGroup.shutdownGracefully();
@@ -88,6 +94,8 @@ public class Application {
             System.out.println("FSGGS: Open your web browser and navigate to " + (SSL ? "https" : "http") + "://" +
                     (Objects.equals(IP, "0.0.0.0") ? "127.0.0.1" : IP) + ":" + PORT + '/');
 
+            Application.run = true;
+            MasterService.updateMasterServerTime();
             future.channel().closeFuture().syncUninterruptibly();
         } catch (BindException e) {
             if (Objects.equals(e.getMessage(), "Address already in use: bind")) {

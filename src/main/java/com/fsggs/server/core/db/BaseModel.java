@@ -1,31 +1,21 @@
 package com.fsggs.server.core.db;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.Criteria;
+import org.hibernate.Query;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
-import java.io.Serializable;
+import java.util.List;
 
-@MappedSuperclass
-abstract public class BaseModel implements Serializable {
-    @Id
-    @JsonProperty
-    @GeneratedValue(generator = "increment")
-    @GenericGenerator(name = "increment", strategy = "increment")
-    @Column(name = "id")
-    private Long id;
+public class BaseModel {
 
-    public BaseModel() {
+    public static <T> List<T> listAndCast(Query q) {
+        @SuppressWarnings("unchecked")
+        List<T> list = q.list();
+        return list;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+    public static <T> List<T> listAndCast(Criteria cr) {
+        @SuppressWarnings("unchecked")
+        List<T> list = cr.list();
+        return list;
     }
 }

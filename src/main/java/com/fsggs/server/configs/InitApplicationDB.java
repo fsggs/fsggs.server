@@ -9,13 +9,11 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
 public class InitApplicationDB {
-    private Application application;
     private Configuration config = new Configuration();
 
     private final SessionFactory sessionFactory;
 
-    public InitApplicationDB(Application application) {
-        this.application = application;
+    public InitApplicationDB() {
         this.applyMigration();
         sessionFactory = buildSessionFactory();
     }
@@ -50,9 +48,9 @@ public class InitApplicationDB {
         flyway.setSqlMigrationPrefix("m");
         flyway.setRepeatableSqlMigrationPrefix("r");
         flyway.setDataSource(
-                application.serverConfig.get("db_url"),
-                application.serverConfig.get("db_user"),
-                application.serverConfig.get("db_password")
+                Application.serverConfig.get("db_url"),
+                Application.serverConfig.get("db_user"),
+                Application.serverConfig.get("db_password")
         );
         flyway.migrate();
         return this;
@@ -61,13 +59,13 @@ public class InitApplicationDB {
     private Configuration getConfiguration() {
         registerEntity();
         //config.setProperty("hibernate.bytecode.use_reflection_optimizer", "false");
-        config.setProperty("hibernate.connection.driver_class", application.serverConfig.get("db_driver"));
-        config.setProperty("hibernate.connection.url", application.serverConfig.get("db_url"));
-        config.setProperty("hibernate.connection.username", application.serverConfig.get("db_user"));
-        config.setProperty("hibernate.connection.password", application.serverConfig.get("db_password"));
-        config.setProperty("hibernate.connection.pool_size", application.serverConfig.get("db_pool_size"));
-        config.setProperty("hibernate.show_sql", application.serverConfig.get("db_show_sql"));
-        config.setProperty("hibernate.dialect", application.serverConfig.get("db_dialect"));
+        config.setProperty("hibernate.connection.driver_class", Application.serverConfig.get("db_driver"));
+        config.setProperty("hibernate.connection.url", Application.serverConfig.get("db_url"));
+        config.setProperty("hibernate.connection.username", Application.serverConfig.get("db_user"));
+        config.setProperty("hibernate.connection.password", Application.serverConfig.get("db_password"));
+        config.setProperty("hibernate.connection.pool_size", Application.serverConfig.get("db_pool_size"));
+        config.setProperty("hibernate.show_sql", Application.serverConfig.get("db_show_sql"));
+        config.setProperty("hibernate.dialect", Application.serverConfig.get("db_dialect"));
         config.setProperty("hibernate.hbm2ddl.auto", "validate");
         config.setProperty("hibernate.format_sql", "true");
         config.setProperty("hibernate.current_session_context_class", "thread");

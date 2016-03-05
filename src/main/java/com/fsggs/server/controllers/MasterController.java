@@ -22,7 +22,6 @@ public class MasterController extends BaseController {
         int limit = 10;
         int offset = (params.containsKey("page")) ? Integer.parseInt(params.get("page")) * 10 - 10 : 0;
 
-
         ObjectMapper mapper = new ObjectMapper();
         VersionJSON versionJSON = new VersionJSON(offset, limit);
 
@@ -52,10 +51,29 @@ public class MasterController extends BaseController {
 
         public VersionJSON(int offset, int limit) {
             try {
-                servers = Application.dao.getServerDAO().getAllServersScope(offset, limit);
+                servers = Application.dao.getServer().getAllScope(offset, limit);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    @Route(PATH = "/api/update.json", METHOD = "POST", TYPE = "application/json; charset=UTF-8")
+    public String updateMasterServer() {
+        String token = data.containsKey("token") ? data.get("token") : null;
+
+        if (token != null && Boolean.valueOf(Application.serverConfig.get("master_server_local"))) {
+            try {
+                List<Server> servers = Application.dao.getServer().getByToken(token);
+                if (servers.size() > 0) {
+                    Application.dao.getServer().update(servers.get(0));
+                    return "{status:good}";
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return "{status:fail}";
     }
 }

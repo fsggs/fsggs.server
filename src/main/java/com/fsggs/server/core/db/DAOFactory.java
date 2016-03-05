@@ -1,10 +1,13 @@
 package com.fsggs.server.core.db;
 
-import com.fsggs.server.entities.master.dao.IServerDAO;
-import com.fsggs.server.entities.master.dao.ServerDAO;
+import com.fsggs.server.models.auth.IUserModel;
+import com.fsggs.server.models.auth.UserModel;
+import com.fsggs.server.models.master.IServerModel;
+import com.fsggs.server.models.master.ServerModel;
 
 public class DAOFactory {
-    private static IServerDAO serverDAO = null;
+    private static IServerModel serverDAO = null;
+    private static IUserModel userDAO = null;
 
     private static DAOFactory instance = null;
 
@@ -15,10 +18,17 @@ public class DAOFactory {
         return instance;
     }
 
-    public IServerDAO getServerDAO() {
+    public IServerModel getServer() {
         if (serverDAO == null) {
-            serverDAO = new ServerDAO();
+            serverDAO = new ServerModel();
         }
         return serverDAO;
+    }
+
+    public IUserModel getUser() {
+        if (userDAO == null) {
+            userDAO = new UserModel();
+        }
+        return userDAO;
     }
 }

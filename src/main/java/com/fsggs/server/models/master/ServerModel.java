@@ -1,7 +1,7 @@
-package com.fsggs.server.entities.master.dao;
+package com.fsggs.server.models.master;
 
 import com.fsggs.server.Application;
-import com.fsggs.server.core.db.DAOModel;
+import com.fsggs.server.core.db.BaseModel;
 import com.fsggs.server.entities.master.Server;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
@@ -11,11 +11,13 @@ import org.hibernate.transform.Transformers;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
-public class ServerDAO extends DAOModel implements IServerDAO {
+public class ServerModel extends BaseModel implements IServerModel {
     @Override
-    public void addServer(Server server) throws SQLException {
+    public void add(Server server) throws SQLException {
         Session session = null;
         try {
             session = Application.db.openSession();
@@ -24,7 +26,7 @@ public class ServerDAO extends DAOModel implements IServerDAO {
             session.getTransaction().commit();
         } catch (Exception e) {
             e.printStackTrace();
-            Application.logger.warn("Error when insert");
+            Application.logger.warn("Error when insert server");
         } finally {
             if (session != null && session.isOpen()) {
                 session.close();
@@ -33,7 +35,7 @@ public class ServerDAO extends DAOModel implements IServerDAO {
     }
 
     @Override
-    public void updateServer(Server server) throws SQLException {
+    public void update(Server server) throws SQLException {
         Session session = null;
         try {
             session = Application.db.openSession();
@@ -42,7 +44,7 @@ public class ServerDAO extends DAOModel implements IServerDAO {
             session.getTransaction().commit();
         } catch (Exception e) {
             e.printStackTrace();
-            Application.logger.warn("Error when update");
+            Application.logger.warn("Error when update server");
         } finally {
             if (session != null && session.isOpen()) {
                 session.close();
@@ -51,7 +53,7 @@ public class ServerDAO extends DAOModel implements IServerDAO {
     }
 
     @Override
-    public void deleteServer(Server server) throws SQLException {
+    public void delete(Server server) throws SQLException {
         Session session = null;
         try {
             session = Application.db.openSession();
@@ -60,7 +62,7 @@ public class ServerDAO extends DAOModel implements IServerDAO {
             session.getTransaction().commit();
         } catch (Exception e) {
             e.printStackTrace();
-            Application.logger.warn("Error when delete");
+            Application.logger.warn("Error when delete server");
         } finally {
             if (session != null && session.isOpen()) {
                 session.close();
@@ -69,7 +71,7 @@ public class ServerDAO extends DAOModel implements IServerDAO {
     }
 
     @Override
-    public Server getServerById(Long id) throws SQLException {
+    public Server getById(Long id) throws SQLException {
         Session session = null;
         Server server = null;
         try {
@@ -77,7 +79,7 @@ public class ServerDAO extends DAOModel implements IServerDAO {
             server = session.load(Server.class, id);
         } catch (Exception e) {
             e.printStackTrace();
-            Application.logger.warn("Error when findById");
+            Application.logger.warn("Error when getById()");
         } finally {
             if (session != null && session.isOpen()) {
                 session.close();
@@ -87,18 +89,17 @@ public class ServerDAO extends DAOModel implements IServerDAO {
     }
 
     @Override
-    public List<Server> getAllServers() throws SQLException {
+    public List<Server> getAll() throws SQLException {
         Session session = null;
         List<Server> servers = new ArrayList<>();
         try {
             session = Application.db.openSession();
-            Criteria criteria = session.createCriteria(Server.class)
-                    .setResultTransformer(Transformers.aliasToBean(Server.class));
+            Criteria criteria = session.createCriteria(Server.class);
 
             servers = listAndCast(criteria);
         } catch (Exception e) {
             e.printStackTrace();
-            Application.logger.warn("Error when getAll");
+            Application.logger.warn("Error when getAll()");
         } finally {
             if (session != null && session.isOpen()) {
                 session.close();
@@ -108,7 +109,83 @@ public class ServerDAO extends DAOModel implements IServerDAO {
     }
 
     @Override
-    public List<Server> getAllServersScope(int offset, int limit) throws SQLException {
+    public List<Server> getByName(String name) throws SQLException {
+        Session session = null;
+        List<Server> servers = new ArrayList<>();
+        try {
+            session = Application.db.openSession();
+            Criteria criteria = session.createCriteria(Server.class)
+                    .add(Restrictions.eq("name", name));
+
+            servers = listAndCast(criteria);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Application.logger.warn("Error when getByName()");
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
+        }
+        return servers;
+    }
+
+    @Override
+    public List<Server> getByAddress(String address) throws SQLException {
+        Session session = null;
+        List<Server> servers = new ArrayList<>();
+        try {
+            session = Application.db.openSession();
+            Criteria criteria = session.createCriteria(Server.class)
+                    .add(Restrictions.eq("address", address));
+
+            servers = listAndCast(criteria);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Application.logger.warn("Error when getByAddress()");
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
+        }
+        return servers;
+    }
+
+    @Override
+    public List<Server> getByToken(String token) throws SQLException {
+        final long ONE_MINUTE_IN_MILLIS = 60000;
+        Calendar date = Calendar.getInstance();
+        long currentTime = date.getTimeInMillis();
+        Date lastHalfMinute = new Date(currentTime - ONE_MINUTE_IN_MILLIS / 2);
+
+        Session session = null;
+        List<Server> servers = new ArrayList<>();
+        try {
+            session = Application.db.openSession();
+            Criteria criteria = session.createCriteria(Server.class)
+                    .add(Restrictions.eq("token", token))
+                    .add(Restrictions.le("updatedDate", lastHalfMinute));
+
+            servers = listAndCast(criteria);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Application.logger.warn("Error when getByToken()");
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
+        }
+        return servers;
+    }
+
+    /* Customs */
+
+    @Override
+    public List<Server> getAllScope(int offset, int limit) throws SQLException {
+        final long ONE_MINUTE_IN_MILLIS = 60000;
+        Calendar date = Calendar.getInstance();
+        long currentTime = date.getTimeInMillis();
+        Date lastMinute = new Date(currentTime - ONE_MINUTE_IN_MILLIS);
+
         Session session = null;
         List<Server> servers = new ArrayList<>();
         try {
@@ -116,7 +193,9 @@ public class ServerDAO extends DAOModel implements IServerDAO {
             Criteria criteria = session.createCriteria(Server.class)
                     .setProjection(Projections.projectionList()
                             .add(Projections.property("name"), "name")
-                            .add(Projections.property("address"), "address"))
+                            .add(Projections.property("address"), "address")
+                            .add(Projections.property("updatedDate"), "updatedDate"))
+                    .add(Restrictions.gt("updatedDate", lastMinute))
                     .setResultTransformer(Transformers.aliasToBean(Server.class));
 
             criteria.setFirstResult(offset);
@@ -125,51 +204,7 @@ public class ServerDAO extends DAOModel implements IServerDAO {
             servers = listAndCast(criteria);
         } catch (Exception e) {
             e.printStackTrace();
-            Application.logger.warn("Error when getAllServersScope");
-        } finally {
-            if (session != null && session.isOpen()) {
-                session.close();
-            }
-        }
-        return servers;
-    }
-
-    @Override
-    public List<Server> getServersByName(String name) throws SQLException {
-        Session session = null;
-        List<Server> servers = new ArrayList<>();
-        try {
-            session = Application.db.openSession();
-            Criteria criteria = session.createCriteria(Server.class)
-                    .add(Restrictions.eq("name", name))
-                    .setResultTransformer(Transformers.aliasToBean(Server.class));
-
-            servers = listAndCast(criteria);
-        } catch (Exception e) {
-            e.printStackTrace();
-            Application.logger.warn("Error when getServersByName");
-        } finally {
-            if (session != null && session.isOpen()) {
-                session.close();
-            }
-        }
-        return servers;
-    }
-
-    @Override
-    public List<Server> getServersByAddress(String address) throws SQLException {
-        Session session = null;
-        List<Server> servers = new ArrayList<>();
-        try {
-            session = Application.db.openSession();
-            Criteria criteria = session.createCriteria(Server.class)
-                    .add(Restrictions.eq("address", address))
-                    .setResultTransformer(Transformers.aliasToBean(Server.class));
-
-            servers = listAndCast(criteria);
-        } catch (Exception e) {
-            e.printStackTrace();
-            Application.logger.warn("Error when getServersByAddress");
+            Application.logger.warn("Error when getAllScope()");
         } finally {
             if (session != null && session.isOpen()) {
                 session.close();

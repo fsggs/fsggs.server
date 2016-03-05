@@ -2,19 +2,20 @@ package com.fsggs.server.entities.master;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fsggs.server.core.db.BaseModel;
+import com.fsggs.server.core.db.BaseEntity;
 import org.hibernate.annotations.*;
 import org.hibernate.annotations.Cache;
 
 import javax.persistence.*;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import java.io.Serializable;
 import java.util.Date;
 
-@Entity()
+@Entity
 @Table(name = "master_server")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class Server extends BaseModel {
+public class Server extends BaseEntity {
     @JsonProperty
     @Column(name = "name")
     private String name;
@@ -24,11 +25,17 @@ public class Server extends BaseModel {
     private String address;
 
     @JsonIgnore
+    @Column(name = "token")
+    private String token;
+
+    @JsonIgnore
+    @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
     private Date createdDate;
 
     @JsonIgnore
+    @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private Date updatedDate;
@@ -57,6 +64,15 @@ public class Server extends BaseModel {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 
 

@@ -1,6 +1,6 @@
 package com.fsggs.server.entities.auth;
 
-import com.fsggs.server.core.db.BaseModel;
+import com.fsggs.server.core.db.BaseEntity;
 import org.hibernate.annotations.*;
 import org.hibernate.annotations.Cache;
 
@@ -9,20 +9,22 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.util.Date;
 
-@Entity()
+@Entity
 @Table(name = "auth_user")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class User extends BaseModel {
+public class User extends BaseEntity {
     @Column(name = "login")
     private String login;
 
     @Column(name = "password")
     private String password;
 
+    @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
     private Date registerDate;
 
+    @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "last_login_at")
     private Date loginDate;

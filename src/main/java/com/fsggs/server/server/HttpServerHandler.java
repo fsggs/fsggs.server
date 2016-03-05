@@ -60,7 +60,7 @@ public class HttpServerHandler {
             return;
         }
 
-        String uriPath = uri.split("\\?")[0];
+        String uriPath = uri.split("\\?")[0].replaceAll("([/])\\1+", "$1");
 
         // Handshake
         if (request.method() == GET && "/".equals(uriPath)
