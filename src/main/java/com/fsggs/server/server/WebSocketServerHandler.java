@@ -1,10 +1,7 @@
 package com.fsggs.server.server;
 
-import co.nstant.in.cbor.CborDecoder;
-import co.nstant.in.cbor.CborException;
-import co.nstant.in.cbor.model.DataItem;
-import co.nstant.in.cbor.model.Map;
-import co.nstant.in.cbor.model.UnicodeString;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fsggs.server.Application;
 import com.fsggs.server.core.network.INetworkPacket;
 import com.fsggs.server.core.network.NetworkPacketParam;
@@ -15,10 +12,11 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.*;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.reflections.ReflectionUtils.*;
@@ -36,7 +34,7 @@ public class WebSocketServerHandler {
         // Check for closing frame
         if (frame instanceof CloseWebSocketFrame) {
             Channel channel = context.channel();
-            System.out.println("FSGGS: Client " + channel.toString() + " disconnected.");
+            System.out.println("FSGGS: Client " + channel.toString() + " disconnect");
             SessionManager.remove(channel);
             handler.handshaker.close(channel, (CloseWebSocketFrame) frame.retain());
             return;
@@ -67,48 +65,54 @@ public class WebSocketServerHandler {
 
         ByteArrayInputStream encodedData = new ByteArrayInputStream(bytes);
 
-        try {
-            handlerWebSocketPacketManager(context, encodedData);
-        } catch (CborException e) {
-            e.printStackTrace();
-            Application.logger.warn("Receive unknown packet!");
-        }
+        handlerWebSocketPacketManager(context, encodedData);
     }
 
     private void handlerWebSocketPacketManager(ChannelHandlerContext context, ByteArrayInputStream encodedData)
-            throws CborException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        List<DataItem> dataItems;
-        dataItems = new CborDecoder(encodedData).decode();
-        Map data = (Map) dataItems.get(0);
-        String packetName = (data.get(new UnicodeString("packet"))).toString();
+            throws IllegalAccessException, InvocationTargetException, InstantiationException {
 
-        if (Application.networkPackets.containsKey(packetName)) {
-            try {
-                Class<?> packetClass = Application.networkPackets.get(packetName);
-                INetworkPacket packet = (INetworkPacket) packetClass.getConstructor(ChannelHandlerContext.class)
-                        .newInstance(context);
+        CBORFactory f = new CBORFactory();
+        ObjectMapper mapper = new ObjectMapper(f);
+        try {
+            Map<?, ?> data = mapper.readValue(encodedData, Map.class);
 
-                @SuppressWarnings("unchecked")
-                Set<Method> setters = getAllMethods(
-                        packetClass,
-                        withModifier(Modifier.PUBLIC),
-                        withPrefix("set"),
-                        withParametersCount(1),
-                        withAnnotation(NetworkPacketParam.class)
-                );
+            if (data.containsKey("packet")) {
+                String packetName = data.get("packet").toString();
+                if (data.containsKey("packet") && Application.networkPackets.containsKey(packetName)) {
+                    try {
+                        Class<?> packetClass = Application.networkPackets.get(packetName);
+                        INetworkPacket packet = (INetworkPacket) packetClass.getConstructor(ChannelHandlerContext.class)
+                                .newInstance(context);
 
-                for (Method method : setters) {
-                    String annotatedParam = ((NetworkPacketParam) method.getDeclaredAnnotations()[0]).value();
-                    method.invoke(packet, data.get(new UnicodeString(annotatedParam)));
+                        @SuppressWarnings("unchecked")
+                        Set<Method> setters = getAllMethods(
+                                packetClass,
+                                withModifier(Modifier.PUBLIC),
+                                withPrefix("set"),
+                                withParametersCount(1),
+                                withAnnotation(NetworkPacketParam.class)
+                        );
+
+                        for (Method method : setters) {
+                            String annotatedParam = ((NetworkPacketParam) method.getDeclaredAnnotations()[0]).value();
+                            if (data.containsKey(annotatedParam)) {
+                                method.invoke(packet, data.get(annotatedParam));
+                            }
+                        }
+
+                        packet.setData(data);
+                        packet.receive();
+                    } catch (NoSuchMethodException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    Application.logger.warn("Receive unregistered packet: \"" + packetName + "\"!");
                 }
-
-                packet.setData(data);
-                packet.receive();
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
+            } else {
+                Application.logger.warn("Receive unregistered CBOR data: \r\n \r\n " + encodedData.toString());
             }
-        } else {
-            Application.logger.warn("Receive unregistered packet: \"" + packetName + "Packet\"!");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

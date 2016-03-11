@@ -1,9 +1,11 @@
 package com.fsggs.server.core.network;
 
-import co.nstant.in.cbor.model.Map;
+import java.util.Map;
 
 public interface INetworkPacket {
-    public INetworkPacket setData(Map data);
+    public INetworkPacket setData(Map<?, ?> data);
+
     public INetworkPacket receive();
-    public INetworkPacket send(String message);
+
+    public INetworkPacket send();
 }

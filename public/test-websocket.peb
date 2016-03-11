@@ -25,7 +25,7 @@
             } else {
                 message = event.data;
             }
-            ta.value = ta.value + '\n' + message;
+            ta.value = ta.value + message + '\n';
         };
         socket.onopen = function (event) {
             var ta = document.getElementById('responseText');
@@ -54,7 +54,7 @@
         if (socket.readyState == WebSocket.OPEN) {
             var message = CBOR.encode({
                 testMessage: "Hello Server",
-                packet: "Test",
+                packet: "TestPacket",
                 test1: {test: 1, testi: 2},
                 test2: [],
                 test3: [1, 2, 1.2],

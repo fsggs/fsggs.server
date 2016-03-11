@@ -1,24 +1,25 @@
 package com.fsggs.server.packets;
 
-import co.nstant.in.cbor.CborBuilder;
-import co.nstant.in.cbor.CborEncoder;
-import co.nstant.in.cbor.CborException;
-import co.nstant.in.cbor.model.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fsggs.server.Application;
 import com.fsggs.server.core.network.BaseNetworkPacket;
 import com.fsggs.server.core.network.INetworkPacket;
 import com.fsggs.server.core.network.NetworkPacket;
 import com.fsggs.server.core.network.NetworkPacketParam;
+import com.fsggs.server.core.session.NetworkPacketAuthLevel;
 import io.netty.channel.ChannelHandlerContext;
 
-import java.io.ByteArrayOutputStream;
+import static com.fsggs.server.core.session.AuthLevel.*;
+
+import java.util.Map;
 import java.util.Objects;
 
-
-@NetworkPacket("Test")
+@NetworkPacket("TestPacket")
+@NetworkPacketAuthLevel(GUEST)
 public class TestPacket extends BaseNetworkPacket {
 
-    UnicodeString message;
+    @JsonProperty("testMessage")
+    protected String message;
 
     public TestPacket(ChannelHandlerContext context, Map data) {
         super(context, data);
@@ -30,71 +31,28 @@ public class TestPacket extends BaseNetworkPacket {
 
     @Override
     public INetworkPacket receive() {
-        Application.logger.info("Receive: TestPacket: " + message);
+        Application.logger.info("Receive: " + packet + ": " + message);
 
-        //message = (UnicodeString) data.get(new UnicodeString("testMessage"));
-        if (message != null && Objects.equals(message.toString(), "Hello Server")) {
-            send("Hello Client");
+        if (message != null && Objects.equals(message, "Hello Server")) {
+            message = "Hello Client";
+            send();
         }
         return this;
     }
 
     @Override
-    public INetworkPacket send(String message) {
-        ByteArrayOutputStream packet = new ByteArrayOutputStream();
+    public INetworkPacket send() {
 
-        try {
-            new CborEncoder(packet).encode(new CborBuilder()
-                    .addMap()
-                    .put(new UnicodeString("testMessage"), new UnicodeString(message))
-                    .put(new UnicodeString("package"), new UnicodeString("Test"))
-                    .put(new UnicodeString("package"), new DoublePrecisionFloat(2.3))
-                    .end()
-                    .build());
+        sendPacket();
+        broadcastPacket();
 
-            sendBuffer(packet);
-            broadcastBuffer(packet);
-
-            Application.logger.info("Send: TestPacket: " + message);
-        } catch (CborException e) {
-            e.printStackTrace();
-        }
+        Application.logger.info("Send: " + packet + ": " + message);
         return this;
     }
 
     @NetworkPacketParam("testMessage")
-    public INetworkPacket setMessage(UnicodeString message) {
+    public INetworkPacket setMessage(String message) {
         this.message = message;
         return this;
     }
-
-//    @NetworkPacketParam("test1")
-//    public INetworkPacket setMessage1(Map message) {
-//        Application.logger.warn(message.get(new UnicodeString("testi")).toString());
-//        return this;
-//    }
-//
-//    @NetworkPacketParam("test2")
-//    public INetworkPacket setMessage2(Array message) {
-//        Application.logger.warn(message.toString());
-//        return this;
-//    }
-//
-//    @NetworkPacketParam("test3")
-//    public INetworkPacket setMessage3(Array message) {
-//        Application.logger.warn(message.toString());
-//        return this;
-//    }
-//
-//    @NetworkPacketParam("test4")
-//    public INetworkPacket setMessage4(UnsignedInteger message) {
-//        Application.logger.warn(message.toString());
-//        return this;
-//    }
-//
-//    @NetworkPacketParam("test5")
-//    public INetworkPacket setMessage5(DoublePrecisionFloat message) {
-//        Application.logger.warn(message.toString());
-//        return this;
-//    }
 }

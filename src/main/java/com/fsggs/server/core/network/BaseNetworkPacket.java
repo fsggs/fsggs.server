@@ -1,6 +1,8 @@
 package com.fsggs.server.core.network;
 
-import co.nstant.in.cbor.model.Map;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fsggs.server.server.SocketServerHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -9,6 +11,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * Base Network Package
@@ -16,33 +20,46 @@ import java.io.ByteArrayOutputStream;
 abstract public class BaseNetworkPacket implements INetworkPacket {
 
     final protected ChannelHandlerContext context;
-    protected Map data;
+    final private CBORFactory cborFactory = new CBORFactory();
+
+    @JsonProperty
+    protected String packet = "UnknownPacket";
+
+    protected Map<?, ?> data;
+
+    private ByteArrayOutputStream out = new ByteArrayOutputStream();
 
     public BaseNetworkPacket(ChannelHandlerContext context) {
         this.context = context;
     }
 
-    public BaseNetworkPacket(ChannelHandlerContext context, Map data) {
+    public BaseNetworkPacket(ChannelHandlerContext context, Map<?, ?> data) {
         this.context = context;
         this.data = data;
     }
 
-    public INetworkPacket setData(Map data) {
+    @NetworkPacketParam("packet")
+    public INetworkPacket setPacket(String packet) {
+        this.packet = packet;
+        return this;
+    }
+
+    public INetworkPacket setData(Map<?, ?> data) {
         this.data = data;
         return this;
     }
 
-    protected void sendBuffer(ByteArrayOutputStream output) {
+    private void sendBuffer(ByteArrayOutputStream output) {
         byte bytes[] = output.toByteArray();
         ByteBuf buffer = Unpooled.wrappedBuffer(bytes);
         this.context.channel().writeAndFlush(new BinaryWebSocketFrame(buffer));
     }
 
-    protected void broadcastBuffer(ByteArrayOutputStream output) {
+    private void broadcastBuffer(ByteArrayOutputStream output) {
         broadcastBuffer(output, false);
     }
 
-    protected void broadcastBuffer(ByteArrayOutputStream output, Boolean me) {
+    private void broadcastBuffer(ByteArrayOutputStream output, Boolean me) {
         byte bytes[] = output.toByteArray();
         ByteBuf buffer = Unpooled.wrappedBuffer(bytes);
 
@@ -51,6 +68,31 @@ abstract public class BaseNetworkPacket implements INetworkPacket {
                 channel.writeAndFlush(new BinaryWebSocketFrame(buffer));
             } else if (me) {
                 channel.writeAndFlush(new BinaryWebSocketFrame(buffer));
+            }
+        }
+    }
+
+    protected void sendPacket() {
+        prepareData();
+        sendBuffer(out);
+    }
+
+    protected void broadcastPacket() {
+        broadcastPacket(false);
+    }
+
+    protected void broadcastPacket(Boolean me) {
+        prepareData();
+        broadcastBuffer(out, me);
+    }
+
+    private void prepareData() {
+        if (out.size() == 0) {
+            try {
+                final ObjectMapper mapper = new ObjectMapper(cborFactory);
+                mapper.writeValue(out, this);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
