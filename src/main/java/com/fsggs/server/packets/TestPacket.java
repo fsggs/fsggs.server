@@ -19,7 +19,7 @@ import java.util.Objects;
 public class TestPacket extends BaseNetworkPacket {
 
     @JsonProperty("testMessage")
-    protected String message;
+    private String message;
 
     public TestPacket(ChannelHandlerContext context, Map data) {
         super(context, data);

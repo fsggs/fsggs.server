@@ -12,6 +12,8 @@ import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
 import java.util.Map;
 
 /**
@@ -24,6 +26,9 @@ abstract public class BaseNetworkPacket implements INetworkPacket {
 
     @JsonProperty
     protected String packet = "UnknownPacket";
+
+    @JsonProperty
+    protected String session = "";
 
     protected Map<?, ?> data;
 
@@ -41,6 +46,12 @@ abstract public class BaseNetworkPacket implements INetworkPacket {
     @NetworkPacketParam("packet")
     public INetworkPacket setPacket(String packet) {
         this.packet = packet;
+        return this;
+    }
+
+    @NetworkPacketParam("session")
+    public INetworkPacket setSession(String session) {
+        this.session = session;
         return this;
     }
 
@@ -95,5 +106,11 @@ abstract public class BaseNetworkPacket implements INetworkPacket {
                 e.printStackTrace();
             }
         }
+    }
+
+    protected String md5(String string) throws Exception {
+        MessageDigest md5 = MessageDigest.getInstance("MD5");
+        md5.update(string.getBytes(), 0, string.length());
+        return new BigInteger(1, md5.digest()).toString(16);
     }
 }

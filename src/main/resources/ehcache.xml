@@ -22,6 +22,11 @@
         <persistence strategy="localTempSwap" />
     </cache>
 
+    <cache name="com.fsggs.server.entities.game.Character" maxEntriesLocalHeap="10000" eternal="false"
+           timeToIdleSeconds="5" timeToLiveSeconds="10">
+        <persistence strategy="localTempSwap" />
+    </cache>
+
     <cache name="org.hibernate.cache.internal.StandardQueryCache"
            maxEntriesLocalHeap="5" eternal="false" timeToLiveSeconds="120">
         <persistence strategy="localTempSwap" />

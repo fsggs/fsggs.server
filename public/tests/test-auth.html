@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Auth Test</title>
+    <script src="js/cbor.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+        var socket;
+        if (!window.WebSocket) {
+            window.WebSocket = window.MozWebSocket;
+        }
+        if (window.WebSocket) {
+            socket = new WebSocket("ws://127.0.0.1:32500/");
+            socket.binaryType = "arraybuffer";
+            socket.onmessage = function (event) {
+                var data = CBOR.decode(event.data);
+                console.log('receive: ' + data.packet, data);
+            };
+            socket.onopen = function (event) {
+                console.info("Web Socket opened!");
+            };
+            socket.onclose = function (event) {
+                console.info("Web Socket closed!");
+            };
+        } else {
+            alert("Your browser does not support Web Socket.");
+        }
+
+        function send() {
+            if (socket.readyState == WebSocket.OPEN) {
+                var message = CBOR.encode({
+                    packet: "AuthPacket",
+                    session: "",
+
+                    action: 1,
+                    login: "admin",
+                    password: "admin"
+                });
+                socket.send(message);
+                console.log('send: AuthPacket', CBOR.decode(message));
+            } else {
+                alert("The socket is not open.");
+            }
+        }
+    </script>
+</head>
+<body>
+<form onsubmit="return false;">
+    <input type="button" value="Send Auth Packet" onclick="send()"/>
+</form>
+</body>
+</html>

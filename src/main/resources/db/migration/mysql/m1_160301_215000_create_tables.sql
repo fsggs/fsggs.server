@@ -1,5 +1,5 @@
 #DROP TABLE IF EXISTS `master_server`;
-CREATE TABLE `master_server` (
+CREATE TABLE IF NOT EXISTS `master_server` (
   `id`         BIGINT(20) NOT NULL AUTO_INCREMENT,
   `name`       VARCHAR(255)        DEFAULT NULL,
   `address`    VARCHAR(255)        DEFAULT NULL,
@@ -12,14 +12,14 @@ CREATE TABLE `master_server` (
   DEFAULT CHARSET = utf8;
 
 #DROP TABLE IF EXISTS `auth_user`;
-CREATE TABLE `auth_user` (
+CREATE TABLE IF NOT EXISTS `auth_user` (
   `id`            BIGINT(20) NOT NULL AUTO_INCREMENT,
   `login`         VARCHAR(255)        DEFAULT NULL,
   `password`      VARCHAR(255)        DEFAULT NULL,
-  `session`       INT(11)             DEFAULT NULL,
+  `session`       VARCHAR(255)        DEFAULT NULL,
   `status`        INT(11)             DEFAULT NULL,
   `access`        INT(11)             DEFAULT NULL,
-  `token`         INT(11)             DEFAULT NULL,
+  `token`         VARCHAR(255)        DEFAULT NULL,
   `last_login_at` DATETIME            DEFAULT NULL,
   `created_at`    DATETIME            DEFAULT NULL,
   PRIMARY KEY (`id`)

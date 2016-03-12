@@ -208,4 +208,29 @@ public class UserModel extends BaseModel implements IUserModel {
         }
         return users;
     }
+
+    /* Customs */
+    @Override
+    public User findByLoginWithCharacters(String login) throws SQLException {
+        Session session = null;
+        List<User> users;
+        try {
+            session = Application.db.openSession();
+            session.enableFetchProfile("user-with-characters");
+            Criteria criteria = session.createCriteria(User.class)
+                    .add(Restrictions.eq("login", login));
+            criteria.setMaxResults(1);
+
+            users = listAndCast(criteria);
+            if (users.size() > 0) return users.get(0);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Application.logger.warn("Error when findByLoginWithCharacters()");
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
+        }
+        return null;
+    }
 }

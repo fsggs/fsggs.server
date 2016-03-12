@@ -25,4 +25,7 @@ public interface IUserModel {
     List<User> getBySession(String session) throws SQLException;
 
     List<User> getByToken(String token) throws SQLException;
+
+    /* Customs */
+    User findByLoginWithCharacters(String login) throws SQLException;
 }

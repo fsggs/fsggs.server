@@ -2,6 +2,7 @@ package com.fsggs.server.configs;
 
 import com.fsggs.server.Application;
 import com.fsggs.server.entities.auth.User;
+import com.fsggs.server.entities.game.Character;
 import com.fsggs.server.entities.master.Server;
 import org.flywaydb.core.Flyway;
 import org.hibernate.Session;
@@ -93,5 +94,6 @@ public class InitApplicationDB {
     private void registerEntity() {
         config.addAnnotatedClass(User.class);
         config.addAnnotatedClass(Server.class);
+        config.addAnnotatedClass(Character.class);
     }
 }
