@@ -34,7 +34,6 @@ public class WebSocketServerHandler {
         // Check for closing frame
         if (frame instanceof CloseWebSocketFrame) {
             Channel channel = context.channel();
-            System.out.println("FSGGS: Client " + channel.toString() + " disconnect");
             SessionManager.remove(channel);
             handler.handshaker.close(channel, (CloseWebSocketFrame) frame.retain());
             return;
@@ -101,6 +100,9 @@ public class WebSocketServerHandler {
                         }
 
                         packet.setData(data);
+                        if (data.containsKey("session")){
+                            packet.updateIdentity(data.get("session").toString());
+                        } else packet.updateIdentity();
                         packet.receive();
                     } catch (NoSuchMethodException e) {
                         e.printStackTrace();

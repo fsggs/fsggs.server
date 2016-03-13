@@ -29,6 +29,11 @@ public class User extends BaseEntity {
     private String password;
 
     @JsonProperty
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "last_login_at")
+    private Date loginDate;
+
+    @JsonProperty
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
@@ -37,8 +42,8 @@ public class User extends BaseEntity {
     @JsonProperty
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "last_login_at")
-    private Date loginDate;
+    @Column(name = "updated_at")
+    private Date updatedDate;
 
     @JsonProperty
     @Column(name = "status")
@@ -147,5 +152,28 @@ public class User extends BaseEntity {
 
     public void setCharacters(Set<Character> characters) {
         this.characters = characters;
+    }
+
+    public Date getUpdatedDate() {
+        return updatedDate;
+    }
+
+    public void setUpdatedDate(Date updatedDate) {
+        this.updatedDate = updatedDate;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "login='" + login + '\'' +
+                ", password='" + password + '\'' +
+                ", loginDate=" + loginDate +
+                ", registerDate=" + registerDate +
+                ", updatedDate=" + updatedDate +
+                ", status=" + status +
+                ", access=" + access +
+                ", session='" + session + '\'' +
+                ", token='" + token + '\'' +
+                '}';
     }
 }

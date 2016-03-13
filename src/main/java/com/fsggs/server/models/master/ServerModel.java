@@ -76,7 +76,7 @@ public class ServerModel extends BaseModel implements IServerModel {
         Server server = null;
         try {
             session = Application.db.openSession();
-            server = session.load(Server.class, id);
+            server = session.get(Server.class, id);
         } catch (Exception e) {
             e.printStackTrace();
             Application.logger.warn("Error when getById()");

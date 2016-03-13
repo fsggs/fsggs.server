@@ -22,13 +22,14 @@ CREATE TABLE IF NOT EXISTS `auth_user` (
   `token`         VARCHAR(255)        DEFAULT NULL,
   `last_login_at` DATETIME            DEFAULT NULL,
   `created_at`    DATETIME            DEFAULT NULL,
+  `updated_at`    DATETIME            DEFAULT NULL,
   PRIMARY KEY (`id`)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
 
-INSERT INTO `auth_user` (login, password, status, access, last_login_at, created_at)
-VALUES ('admin', 'admin', '1', '3', NOW(), NOW());
+INSERT INTO `auth_user` (login, password, status, access, last_login_at, created_at, updated_at)
+VALUES ('admin@localhost', 'admin', '1', '3', NOW(), NOW(), NOW());
 
 INSERT INTO `master_server` (name, address, token, created_at, updated_at)
 VALUES ('FSGGS Solar server #1', 'ws://127.0.0.1:32500', 'c1285e569b053955ab0d85ca3505900c', NOW(), NOW());

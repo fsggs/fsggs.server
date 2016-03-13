@@ -242,7 +242,6 @@ public class HttpServerHandler {
             SocketServerHandler.channels.add(channel);
             SessionManager.add(channel);
             handler.handshaker.handshake(channel, request);
-            System.out.println("FSGGS: Client " + channel.toString() + " connect");
         }
     }
 

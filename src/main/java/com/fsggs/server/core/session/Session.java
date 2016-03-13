@@ -1,6 +1,109 @@
 package com.fsggs.server.core.session;
 
+import com.fsggs.server.Application;
+import com.fsggs.server.core.network.BaseNetworkPacket;
+import com.fsggs.server.entities.auth.User;
+import io.netty.channel.ChannelId;
+
+import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.util.Objects;
+
+import static com.fsggs.server.core.session.AuthLevel.*;
+
 public class Session {
-    private String session = "00000000000000000000000000000000";
-    private Long id = Long.valueOf("0");
+
+    private String session = "";
+    private ChannelId id;
+
+    private UserIdentity userIdentity;
+
+    public Session(ChannelId channelId) {
+        this.id = channelId;
+        this.userIdentity = new UserIdentity();
+    }
+
+    public Session(String login, String session, ChannelId channelId) {
+        this.id = channelId;
+        this.session = session;
+        try {
+            User user = Application.dao.getUser().findByLogin(login);
+            Format f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            if (user != null && Objects.equals(
+                    BaseNetworkPacket.md5(user.getSession() + f.format(user.getLoginDate())), session)) {
+                this.userIdentity = new UserIdentity(user);
+            } else {
+                this.userIdentity = new UserIdentity();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setId(ChannelId id) {
+        this.id = id;
+    }
+
+    public String getSession() {
+        return session;
+    }
+
+    public void setSession(String session) {
+        this.session = session;
+    }
+
+    public ChannelId getId() {
+        return id;
+    }
+
+    public UserIdentity getUserIdentity() {
+        return userIdentity;
+    }
+
+    public void setUserIdentity(UserIdentity userIdentity) {
+        this.userIdentity = userIdentity;
+    }
+
+    public class UserIdentity {
+        private Long userId = Long.valueOf("0");
+        private User user = null;
+        private AuthLevel authLevel = GUEST;
+
+        public UserIdentity() {
+        }
+
+        public UserIdentity(User user) {
+            this.userId = user.getId();
+            this.user = user;
+            this.authLevel = AuthLevel.getValue(user.getAccess());
+        }
+
+        public boolean isGuest() {
+            return user == null;
+        }
+
+        public Long getUserId() {
+            return userId;
+        }
+
+        public void setUserId(Long userId) {
+            this.userId = userId;
+        }
+
+        public User getUser() {
+            return user;
+        }
+
+        public void setUser(User user) {
+            this.user = user;
+        }
+
+        public AuthLevel getAuthLevel() {
+            return authLevel;
+        }
+
+        public void setAuthLevel(AuthLevel authLevel) {
+            this.authLevel = authLevel;
+        }
+    }
 }

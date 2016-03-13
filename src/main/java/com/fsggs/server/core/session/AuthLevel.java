@@ -12,4 +12,13 @@ public enum AuthLevel {
     public int getLevel() {
         return level;
     }
+
+    static public AuthLevel getValue(int value) {
+        for (AuthLevel authLevel : AuthLevel.values()) {
+            if (authLevel.level == value) {
+                return authLevel;
+            }
+        }
+        return null;
+    }
 }

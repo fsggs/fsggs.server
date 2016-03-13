@@ -71,7 +71,7 @@ public class CharacterModel extends BaseModel implements ICharacterModel {
         Character character = null;
         try {
             session = Application.db.openSession();
-            character = session.load(Character.class, id);
+            character = session.get(Character.class, id);
         } catch (Exception e) {
             e.printStackTrace();
             Application.logger.warn("Error when getById()");

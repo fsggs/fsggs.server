@@ -3,9 +3,13 @@ package com.fsggs.server.core.network;
 import java.util.Map;
 
 public interface INetworkPacket {
-    public INetworkPacket setData(Map<?, ?> data);
+    INetworkPacket updateIdentity();
 
-    public INetworkPacket receive();
+    INetworkPacket updateIdentity(String session);
 
-    public INetworkPacket send();
+    INetworkPacket setData(Map<?, ?> data);
+
+    INetworkPacket receive();
+
+    INetworkPacket send();
 }

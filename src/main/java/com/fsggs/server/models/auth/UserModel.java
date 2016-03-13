@@ -72,7 +72,7 @@ public class UserModel extends BaseModel implements IUserModel {
         User user = null;
         try {
             session = Application.db.openSession();
-            user = session.load(User.class, id);
+            user = session.get(User.class, id);
         } catch (Exception e) {
             e.printStackTrace();
             Application.logger.warn("Error when getById()");
@@ -218,7 +218,61 @@ public class UserModel extends BaseModel implements IUserModel {
             session = Application.db.openSession();
             session.enableFetchProfile("user-with-characters");
             Criteria criteria = session.createCriteria(User.class)
+                    .add(Restrictions.eq("login", login))
+                    .add(Restrictions.ne("status", 0));
+            criteria.setMaxResults(1);
+
+            users = listAndCast(criteria);
+            if (users.size() > 0) return users.get(0);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Application.logger.warn("Error when findByLoginWithCharacters()");
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public User findByLogin(String login) throws SQLException {
+        Session session = null;
+        List<User> users;
+        try {
+            session = Application.db.openSession();
+            Criteria criteria = session.createCriteria(User.class)
                     .add(Restrictions.eq("login", login));
+            criteria.setMaxResults(1);
+
+            users = listAndCast(criteria);
+            if (users.size() > 0) return users.get(0);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Application.logger.warn("Error when findByLoginWithCharacters()");
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public User findByLoginWithToken(String login, String token) throws SQLException {
+        return findByLoginWithToken(login, token, 0);
+    }
+
+    @Override
+    public User findByLoginWithToken(String login, String token, int status) throws SQLException {
+        Session session = null;
+        List<User> users;
+        try {
+            session = Application.db.openSession();
+            Criteria criteria = session.createCriteria(User.class)
+                    .add(Restrictions.eq("login", login))
+                    .add(Restrictions.eq("token", token))
+                    .add(Restrictions.eq("status", status));
             criteria.setMaxResults(1);
 
             users = listAndCast(criteria);

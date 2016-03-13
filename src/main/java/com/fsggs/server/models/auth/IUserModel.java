@@ -28,4 +28,10 @@ public interface IUserModel {
 
     /* Customs */
     User findByLoginWithCharacters(String login) throws SQLException;
+
+    User findByLogin(String login) throws SQLException;
+
+    User findByLoginWithToken(String login, String token) throws SQLException;
+
+    User findByLoginWithToken(String login, String token, int status) throws SQLException;
 }
