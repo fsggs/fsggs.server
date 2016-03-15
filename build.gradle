@@ -77,7 +77,6 @@ dependencies {
     compile 'org.reflections:reflections:0.9.10'
     compile 'org.slf4j:slf4j-log4j12:1.7.13'
     compile 'log4j:apache-log4j-extras:1.0'
-    compile 'com.jcabi:jcabi-log:0.17.1'
     compile 'com.jcraft:jzlib:1.1.3'
     compile 'javax.mail:javax.mail-api:1.5.5'
     compile 'com.sun.mail:javax.mail:1.5.5'

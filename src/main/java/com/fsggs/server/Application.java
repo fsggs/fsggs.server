@@ -4,6 +4,7 @@ import com.fsggs.server.configs.InitApplicationConfig;
 import com.fsggs.server.configs.InitApplicationDB;
 import com.fsggs.server.configs.InitLogoServer;
 import com.fsggs.server.core.db.DAOFactory;
+import com.fsggs.server.core.log.FSGGSLevel;
 import com.fsggs.server.core.network.ControllerManager;
 import com.fsggs.server.server.SocketServerInit;
 import com.fsggs.server.services.master.MasterService;
@@ -16,9 +17,10 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.hibernate.SessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.BindException;
 import java.net.InetSocketAddress;
@@ -26,21 +28,22 @@ import java.util.Map;
 import java.util.Objects;
 
 public class Application {
-    public static final String APPLICATION_NAME = "FSGGS Server";
-    public static final String APPLICATION_VERSION = "0.0.2";
-    public static final String APPLICATION_VERSION_ID = "Solar";
+    final static public String APPLICATION_NAME = "FSGGS Server";
+    final static public String APPLICATION_VERSION = "0.0.3";
+    final static public String APPLICATION_VERSION_ID = "Solar";
 
-    public static final Logger logger = LoggerFactory.getLogger(Application.class);
-    public static SessionFactory db;
-    public static DAOFactory dao;
+    final static public Level FSGGS = FSGGSLevel.FSGGS;
+    final static public Logger logger = LogManager.getLogger(Application.class);
+
+    static public SessionFactory db;
+    static public DAOFactory dao;
 
     static public boolean SSL = System.getProperty("ssl") != null;
     static public int PORT = 32500;
     static public String IP = "0.0.0.0";
-    public static String WEBSOCKET_PATH = "";
-    public static String PUBLIC_DIR = "public";
-    public static String CLIENT_URL = "*";
-
+    static public String WEBSOCKET_PATH = "";
+    static public String PUBLIC_DIR = "public";
+    static public String CLIENT_URL = "*";
 
     static public Map<String, String> serverConfig;
     static public Map<String, Class<?>> networkPackets;
@@ -54,8 +57,8 @@ public class Application {
 
     public Application() {
         new InitApplicationConfig();
-        new InitLogoServer(this);
-        db = (new InitApplicationDB()).getSessionFactory();
+        new InitLogoServer();
+        db = (new InitApplicationDB(this)).getSessionFactory();
         dao = DAOFactory.getInstance();
 
         /* Service Hack */
@@ -77,22 +80,34 @@ public class Application {
         return boot.bind(address).syncUninterruptibly();
     }
 
-    protected void stop() {
+    public void stop() {
+        stop(true);
+    }
+
+    public void stop(boolean customEvent) {
         Application.run = false;
-        db.close();
+        if (db != null) db.close();
         logger.info("Server shutdown.");
         bossGroup.shutdownGracefully();
         workerGroup.shutdownGracefully();
+        if (customEvent) System.exit(-1);
     }
 
     static public void main(String... args) throws Exception {
         final Application server = new Application();
 
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                server.stop(false);
+            }
+        });
+
         try {
             ChannelFuture future = server.start(new InetSocketAddress(IP, PORT));
 
-            System.out.println("FSGGS: Open your web browser and navigate to " + (SSL ? "https" : "http") + "://" +
-                    (Objects.equals(IP, "0.0.0.0") ? "127.0.0.1" : IP) + ":" + PORT + '/');
+            logger.log(FSGGS, "Open your web browser and navigate to " + (SSL ? "https" : "http") + "://" +
+                    (Objects.equals(IP, "0.0.0.0") ? "127.0.0.1" : IP) + ":" + PORT);
 
             Application.run = true;
             MasterService.updateMasterServerTime();

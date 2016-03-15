@@ -142,28 +142,31 @@ public class AuthPacketService {
             User user = ap.getAuth().getUser();
             if (!Objects.equals(token, "")) {
                 try {
-                    user.setPassword(encryptPassword(password));
-                    user.setToken("");
-                    Application.dao.getUser().update(user);
+                    if (Objects.equals(user.getToken(), token)) {
+                        user.setPassword(encryptPassword(password));
+                        user.setToken("");
+                        Application.dao.getUser().update(user);
 
-                    ap.setToken("");
-                    ap.setPassword("");
-                    ap.setResult(true);
+                        ap.setToken("");
+                        ap.setPassword("");
+                        ap.setResult(true);
+                    } else ap.addError("Token not found");
                 } catch (SQLException e) {
                     e.printStackTrace();
                     ap.setResult(false);
                 }
             } else {
                 try {
-                    token = BaseNetworkPacket.md5(login + String.valueOf(System.currentTimeMillis()));
-                    EMail.send(login, "Change FSGGS Account Password", "Your token: " + token, "fsggs@localhost");
+                    if (Objects.equals(user.getPassword(), encryptPassword(password))) {
+                        token = BaseNetworkPacket.md5(login + String.valueOf(System.currentTimeMillis()));
 
-                    user.setToken(token);
-                    Application.dao.getUser().update(user);
+                        user.setToken(token);
+                        Application.dao.getUser().update(user);
 
-                    ap.setToken("");
+                        ap.setToken(token);
+                        ap.setResult(true);
+                    } else ap.addError("Current password not match");
                     ap.setPassword("");
-                    ap.setResult(true);
                 } catch (Exception e) {
                     e.printStackTrace();
                     ap.setResult(false);

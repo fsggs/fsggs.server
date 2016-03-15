@@ -16,7 +16,8 @@ public class SessionManager {
     static public void add(Channel channel) {
         final Session s = new Session(channel.id());
         channelSessions.put(channel.id(), s);
-        System.out.println("FSGGS: Client " + channel.toString() + " connect");
+        Application.logger.log(Application.FSGGS, "Client [id: 0x" + channel.id().toString() + "] connect from "
+                + channel.remoteAddress().toString());
     }
 
     static public boolean update(Channel channel, String session, String login) {
@@ -25,7 +26,7 @@ public class SessionManager {
             channelSessions.put(channel.id(), s);
             sessions.put(session, s);
             if (!s.getUserIdentity().isGuest()) {
-                System.out.println("FSGGS: Client [id: 0x" + channel.id() + "] login as "
+                Application.logger.log(Application.FSGGS, "Client [id: 0x" + channel.id() + "] login as "
                         + s.getUserIdentity().getUser().getLogin() + "(id:" + s.getUserIdentity().getUserId()
                         + ", acs:" + s.getUserIdentity().getAuthLevel().getLevel() + ")");
             }
@@ -57,7 +58,7 @@ public class SessionManager {
             if (!channelSessions.get(channel.id()).getUserIdentity().isGuest()) {
                 Session.UserIdentity ui = channelSessions.get(channel.id()).getUserIdentity();
                 logoutFromDB(channel);
-                System.out.println("FSGGS: Client ["
+                Application.logger.log(Application.FSGGS, "Client ["
                         + ui.getUser().getLogin() + "(id:" + ui.getUserId()
                         + ", acs:" + ui.getAuthLevel().getLevel() + ")] exit");
                 sessions.remove(channelSessions.get(channel.id()).getSession());
@@ -73,14 +74,14 @@ public class SessionManager {
             if (!channelSessions.get(channel.id()).getUserIdentity().isGuest()) {
                 Session.UserIdentity ui = channelSessions.get(channel.id()).getUserIdentity();
                 // logoutFromDB(channel);
-                System.out.println("FSGGS: Client ["
+                Application.logger.log(Application.FSGGS, "Client ["
                         + ui.getUser().getLogin() + "(id:" + ui.getUserId()
                         + ", acs:" + ui.getAuthLevel().getLevel() + ")] auto exit");
                 sessions.remove(channelSessions.get(channel.id()).getSession());
                 ui = null;
             }
             channelSessions.remove(channel.id());
-            System.out.println("FSGGS: Client " + channel.toString() + " disconnect");
+            Application.logger.log(Application.FSGGS, "Client [id: 0x" + channel.id().toString() + "] disconnect");
         }
     }
 

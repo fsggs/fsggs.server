@@ -4,7 +4,9 @@ import com.fsggs.server.Application;
 import com.fsggs.server.entities.auth.User;
 import com.fsggs.server.entities.game.Character;
 import com.fsggs.server.entities.master.Server;
+import com.mysql.jdbc.CommunicationsException;
 import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.FlywayException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -14,8 +16,14 @@ public class InitApplicationDB {
 
     private final SessionFactory sessionFactory;
 
-    public InitApplicationDB() {
-        this.applyMigration();
+    public InitApplicationDB(Application application) {
+        try {
+            this.applyMigration();
+        } catch (FlywayException e) {
+            Application.logger.error(e.getMessage());
+            application.stop();
+        }
+
         sessionFactory = buildSessionFactory();
     }
 
@@ -72,13 +80,14 @@ public class InitApplicationDB {
         config.setProperty("hibernate.current_session_context_class", "thread");
 
         // Cache
-        config.setProperty("hibernate.cache.region.factory_class", "org.hibernate.cache.ehcache.EhCacheRegionFactory");
+        config.setProperty("hibernate.cache.region.factory_class", "org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory");
         config.setProperty("net.sf.ehcache.configurationResourceName", "/ehcache.xml");
         config.setProperty("hibernate.cache.region_prefix", "");
         config.setProperty("hibernate.cache.use_second_level_cache", "true");
         config.setProperty("hibernate.cache.use_query_cache", "true");
-        config.setProperty("hibernate.generate_statistics", "true");
+        config.setProperty("hibernate.generate_statistics", "false");
         config.setProperty("hibernate.cache.use_structured_entries", "true");
+        System.setProperty("net.sf.ehcache.enableShutdownHook", "true");
 
         // C3P0
         config.setProperty("hibernate.connection.provider_class", "org.hibernate.c3p0.internal.C3P0ConnectionProvider");
