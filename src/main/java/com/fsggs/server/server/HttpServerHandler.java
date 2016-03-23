@@ -1,6 +1,7 @@
 package com.fsggs.server.server;
 
 import com.fsggs.server.Application;
+import com.fsggs.server.core.network.BaseController;
 import com.fsggs.server.core.session.SessionManager;
 import com.fsggs.server.utils.FileUtils;
 import com.mitchellbosecke.pebble.PebbleEngine;
@@ -9,6 +10,7 @@ import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
+import io.netty.handler.codec.AsciiString;
 import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.multipart.*;
@@ -72,6 +74,7 @@ public class HttpServerHandler {
         }
 
         if (Application.controllerManager.hasController(uriPath, request.method())) {
+
             Map<String, List<String>> parameters = new QueryStringDecoder(request.uri()).parameters();
             Map<String, String> params = new HashMap<>();
             if (parameters.size() > 0) {
@@ -110,20 +113,42 @@ public class HttpServerHandler {
             }
 
             try {
-                String response = Application.controllerManager.runController(
+                BaseController controller = Application.controllerManager.getController(
                         uriPath,
-                        request.method(),
-                        params,
-                        cookies,
-                        httpData
+                        request.method()
                 );
-                sendPage(response, context, request, Application.controllerManager.getContentType(uriPath));
+
+                controller
+                        .setRequest(request)
+                        .setURI(uriPath)
+                        .setCookies(cookies)
+                        .setParams(params)
+                        .setData(httpData);
+
+                String result = Application.controllerManager.runController(controller);
+                ByteBuf buffer = Unpooled.copiedBuffer(result.getBytes());
+
+                FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, buffer);
+
+                response.headers().set(CONTENT_TYPE, controller.getHttpContentType() != null
+                        ? controller.getHttpContentType()
+                        : Application.controllerManager.getContentType(uriPath));
+
+                for (Map.Entry<AsciiString, String> header : controller.getHeaders().entrySet()) {
+                    response.headers().set(header.getKey(), header.getValue());
+                }
+
+                response.setProtocolVersion(controller.getHttpVersion());
+                response.setStatus(controller.getHttpResponseStatus());
+
+                HttpHeaderUtil.setContentLength(response, buffer.readableBytes());
+
+                sendHttpResponse(context, request, response);
                 return;
             } catch (NoSuchMethodException
                     | IllegalAccessException
                     | InstantiationException
-                    | InvocationTargetException
-                    | IOException e) {
+                    | InvocationTargetException e) {
                 e.printStackTrace();
             }
         }
@@ -206,17 +231,6 @@ public class HttpServerHandler {
         sendErrorPage(NOT_FOUND, context, request);
     }
 
-    private static void appendDecoderResult(HttpObject o) {
-        DecoderResult result = o.decoderResult();
-        if (result.isSuccess()) {
-            return;
-        }
-
-        Application.logger.warn(".. WITH DECODER FAILURE: ");
-        Application.logger.warn(String.valueOf(result.cause()));
-        Application.logger.warn("\r\n");
-    }
-
     /**
      * Send http response
      */
@@ -261,15 +275,13 @@ public class HttpServerHandler {
      * Send page
      */
     private static void sendPage(File file, ChannelHandlerContext context, FullHttpRequest request) throws IOException {
-        ByteBuf buffer;
-        buffer = Unpooled.copiedBuffer(Files.readAllBytes(file.toPath()));
+        ByteBuf buffer = Unpooled.copiedBuffer(Files.readAllBytes(file.toPath()));
         sendPage(buffer, context, request);
     }
 
     private static void sendPage(String response, ChannelHandlerContext context, FullHttpRequest request, String type)
             throws IOException {
-        ByteBuf buffer;
-        buffer = Unpooled.copiedBuffer(response.getBytes());
+        ByteBuf buffer = Unpooled.copiedBuffer(response.getBytes());
         sendPage(buffer, context, request, type);
     }
 

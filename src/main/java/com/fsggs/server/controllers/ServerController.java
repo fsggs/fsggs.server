@@ -7,6 +7,7 @@ import com.fsggs.server.core.network.Route;
 import com.mitchellbosecke.pebble.PebbleEngine;
 import com.mitchellbosecke.pebble.error.PebbleException;
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
+import io.netty.handler.codec.AsciiString;
 import io.netty.handler.codec.http.Cookie;
 
 import java.io.IOException;
@@ -21,27 +22,19 @@ public class ServerController extends BaseController {
     @Route(PATH = "/")
     public String indexPage() {
         Map<String, Object> data = new HashMap<>();
-        PebbleEngine engine = new PebbleEngine.Builder().build();
 
         data.put("serverTitle", Application.APPLICATION_NAME);
         data.put("serverVersion", Application.APPLICATION_VERSION);
 
-        try {
-            PebbleTemplate cTemplate = engine.getTemplate("public/index.peb");
+        header(new AsciiString("Server".getBytes()),
+                Application.APPLICATION_NAME + " (v." + Application.APPLICATION_VERSION + ")");
 
-            Writer writer = new StringWriter();
-            cTemplate.evaluate(writer, data);
-            return writer.toString();
-        } catch (PebbleException | IOException e) {
-            e.printStackTrace();
-        }
-
-        return "";
+        return render("public/index", data);
     }
 
     @Route(PATH = "/test", METHOD = "POST")
     public String testPage() {
-        String result = URI + BR;
+        String result = getURI() + BR;
 
         result += "Params: " + BR;
         for (Map.Entry<String, String> entry : params.entrySet()) {

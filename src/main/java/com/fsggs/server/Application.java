@@ -65,7 +65,7 @@ public class Application {
         (new MasterService()).updateMasterServerTimeTask();
     }
 
-    public ChannelFuture start(InetSocketAddress address) throws Exception {
+    private ChannelFuture start(InetSocketAddress address) throws Exception {
         if (SSL) {
             SelfSignedCertificate ssc = new SelfSignedCertificate();
             sslContext = SslContext.newServerContext(ssc.certificate(), ssc.privateKey());
@@ -84,7 +84,7 @@ public class Application {
         stop(true);
     }
 
-    public void stop(boolean customEvent) {
+    private void stop(boolean customEvent) {
         Application.run = false;
         if (db != null) db.close();
         logger.info("Server shutdown.");

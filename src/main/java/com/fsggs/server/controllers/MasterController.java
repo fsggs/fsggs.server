@@ -14,6 +14,8 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN;
+
 @Controller
 public class MasterController extends BaseController {
 
@@ -24,6 +26,8 @@ public class MasterController extends BaseController {
 
         ObjectMapper mapper = new ObjectMapper();
         VersionJSON versionJSON = new VersionJSON(offset, limit);
+
+        header(ACCESS_CONTROL_ALLOW_ORIGIN, Application.CLIENT_URL);
 
         try {
             return mapper.writeValueAsString(versionJSON);

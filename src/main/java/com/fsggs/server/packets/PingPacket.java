@@ -1,6 +1,7 @@
 package com.fsggs.server.packets;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fsggs.server.Application;
 import com.fsggs.server.core.network.BaseNetworkPacket;
 import com.fsggs.server.core.network.INetworkPacket;
 import com.fsggs.server.core.network.NetworkPacket;
@@ -47,6 +48,7 @@ public class PingPacket extends BaseNetworkPacket {
     @Override
     public INetworkPacket send() {
         startTime = System.currentTimeMillis();
+        sendPacket();
         return this;
     }
 
