@@ -7,13 +7,13 @@ import java.util.List;
 
 public class BaseModel {
 
-    public static <T> List<T> listAndCast(Query q) {
+    protected static <T> List<T> listAndCast(Query q) {
         @SuppressWarnings("unchecked")
         List<T> list = q.list();
         return list;
     }
 
-    public static <T> List<T> listAndCast(Criteria cr) {
+    protected static <T> List<T> listAndCast(Criteria cr) {
         @SuppressWarnings("unchecked")
         List<T> list = cr.list();
         return list;

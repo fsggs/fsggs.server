@@ -11,7 +11,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.handler.codec.AsciiString;
-import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.multipart.*;
 import io.netty.handler.codec.http.websocketx.*;
@@ -34,17 +33,17 @@ import static io.netty.handler.codec.http.HttpMethod.*;
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static io.netty.handler.codec.http.HttpVersion.*;
 
-public class HttpServerHandler {
+class HttpServerHandler {
     private static final Pattern INSECURE_URI = Pattern.compile(".*[<>&\"].*");
     private static final Pattern ALLOWED_FILE_NAME = Pattern.compile("[A-Za-z0-9][-_A-Za-z0-9\\.]*");
 
-    public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
-    public static final String HTTP_DATE_GMT_TIMEZONE = "GMT";
-    public static final int HTTP_CACHE_SECONDS = 60;
+    private static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
+    private static final String HTTP_DATE_GMT_TIMEZONE = "GMT";
+    private static final int HTTP_CACHE_SECONDS = 60;
 
     private SocketServerHandler handler;
 
-    public HttpServerHandler(SocketServerHandler handler, ChannelHandlerContext context, FullHttpRequest msg) {
+    HttpServerHandler(SocketServerHandler handler, ChannelHandlerContext context, FullHttpRequest msg) {
         this.handler = handler;
         handlerHttpRequest(context, msg);
     }

@@ -18,12 +18,12 @@ public class Session {
 
     private UserIdentity userIdentity;
 
-    public Session(ChannelId channelId) {
+    Session(ChannelId channelId) {
         this.id = channelId;
         this.userIdentity = new UserIdentity();
     }
 
-    public Session(String login, String session, ChannelId channelId) {
+    Session(String login, String session, ChannelId channelId) {
         this.id = channelId;
         this.session = session;
         try {
@@ -69,10 +69,10 @@ public class Session {
         private User user = null;
         private AuthLevel authLevel = GUEST;
 
-        public UserIdentity() {
+        UserIdentity() {
         }
 
-        public UserIdentity(User user) {
+        UserIdentity(User user) {
             this.userId = user.getId();
             this.user = user;
             this.authLevel = AuthLevel.getValue(user.getAccess());

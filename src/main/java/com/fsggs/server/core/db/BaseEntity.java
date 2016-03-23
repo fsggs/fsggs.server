@@ -18,9 +18,6 @@ abstract public class BaseEntity implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    public BaseEntity() {
-    }
-
     public Long getId() {
         return id;
     }

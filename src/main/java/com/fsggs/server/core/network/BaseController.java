@@ -38,7 +38,7 @@ abstract public class BaseController {
         return this;
     }
 
-    public String getURI() {
+    protected String getURI() {
         return URI;
     }
 

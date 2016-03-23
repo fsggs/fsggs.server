@@ -4,11 +4,11 @@ import org.apache.log4j.Level;
 
 public class FSGGSLevel extends Level {
 
-    public static final int FSGGS_INT = WARN_INT + 50;
+    private static final int FSGGS_INT = WARN_INT + 50;
 
     public static final Level FSGGS = new FSGGSLevel(FSGGS_INT, "FSGGS", 7);
 
-    protected FSGGSLevel(int arg0, String arg1, int arg2) {
+    private FSGGSLevel(int arg0, String arg1, int arg2) {
         super(arg0, arg1, arg2);
 
     }

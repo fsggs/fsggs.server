@@ -162,12 +162,12 @@ public class ControllerManager {
     }
 
     private class RouteMethod {
-        public String routePath;
+        String routePath;
 
-        public Class<?> controller;
-        public Method method;
+        Class<?> controller;
+        Method method;
 
-        public RouteMethod(String routePath, Class<?> controller, Method method) {
+        RouteMethod(String routePath, Class<?> controller, Method method) {
             this.routePath = routePath;
             this.controller = controller;
             this.method = method;

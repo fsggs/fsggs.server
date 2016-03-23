@@ -16,7 +16,7 @@ import java.util.TimerTask;
 public class MasterService {
     static private final String gate = "/api/update.json";
 
-    class UpdateMasterServerTimeTask extends TimerTask {
+    private class UpdateMasterServerTimeTask extends TimerTask {
         public void run() {
             MasterService.updateMasterServerTime();
         }

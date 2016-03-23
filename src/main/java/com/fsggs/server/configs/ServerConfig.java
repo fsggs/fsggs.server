@@ -6,13 +6,13 @@ import com.fsggs.server.utils.FileUtils;
 import java.io.*;
 import java.util.*;
 
-public class ServerConfig {
+class ServerConfig {
     final private String serverConfigFile = "server.properties";
 
     final private Properties properties = new Properties();
     final private Map<String, String> config = new LinkedHashMap<>();
 
-    public ServerConfig() {
+    ServerConfig() {
         try {
             if (FileUtils.isRunnedInJar()) {
                 loadConfig();
@@ -36,7 +36,7 @@ public class ServerConfig {
         }
     }
 
-    public ServerConfig saveConfig() throws FileNotFoundException, IOException {
+    private ServerConfig saveConfig() throws IOException {
         File configFile = new File(serverConfigFile);
         OutputStream outputStream = new FileOutputStream(FileUtils.getApplicationPath().toString() + '/' + configFile);
         properties.store(outputStream, "Server config");
@@ -45,11 +45,11 @@ public class ServerConfig {
         return this;
     }
 
-    public ServerConfig loadConfig() throws FileNotFoundException, IOException {
+    private ServerConfig loadConfig() throws IOException {
         return this.loadConfig(false);
     }
 
-    public ServerConfig loadConfig(boolean inJar) throws FileNotFoundException, IOException {
+    private ServerConfig loadConfig(boolean inJar) throws IOException {
         File configFile = new File(serverConfigFile);
         Application.logger.info("Try load " + serverConfigFile + " from " + (inJar ? "jar" : "outside jar"));
 
@@ -65,7 +65,7 @@ public class ServerConfig {
         return this;
     }
 
-    public ServerConfig addPropertyToServerConfig(String key, String value) {
+    ServerConfig addPropertyToServerConfig(String key, String value) {
         try {
             properties.setProperty(key, value);
             config.put(key, value);
@@ -76,7 +76,7 @@ public class ServerConfig {
         return this;
     }
 
-    public Map<String, String> getConfig() {
+    Map<String, String> getConfig() {
         return config;
     }
 }

@@ -21,11 +21,11 @@ import java.util.Set;
 
 import static org.reflections.ReflectionUtils.*;
 
-public class WebSocketServerHandler {
+class WebSocketServerHandler {
 
     private SocketServerHandler handler;
 
-    public WebSocketServerHandler(SocketServerHandler handler, ChannelHandlerContext context, WebSocketFrame msg) throws IllegalAccessException, InvocationTargetException, InstantiationException {
+    WebSocketServerHandler(SocketServerHandler handler, ChannelHandlerContext context, WebSocketFrame msg) throws IllegalAccessException, InvocationTargetException, InstantiationException {
         this.handler = handler;
         handlerWebSocketFrame(context, msg);
     }
@@ -127,11 +127,11 @@ public class WebSocketServerHandler {
         context.channel().writeAndFlush(new TextWebSocketFrame("[Me] " + userMessage));
     }
 
-    public static void broadcast(ChannelHandlerContext context, String message) {
+    private static void broadcast(ChannelHandlerContext context, String message) {
         broadcast(context, message, false);
     }
 
-    public static void broadcast(ChannelHandlerContext context, String message, Boolean me) {
+    private static void broadcast(ChannelHandlerContext context, String message, Boolean me) {
         for (Channel channel : SocketServerHandler.channels) {
             if (channel != context.channel() && !me) {
                 channel.writeAndFlush(new TextWebSocketFrame(message));

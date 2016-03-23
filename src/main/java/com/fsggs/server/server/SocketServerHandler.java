@@ -9,12 +9,10 @@ import io.netty.util.concurrent.GlobalEventExecutor;
 
 import java.lang.reflect.InvocationTargetException;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-
 public class SocketServerHandler extends SimpleChannelInboundHandler<Object> {
 
     static final public ChannelGroup channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
-    public WebSocketServerHandshaker handshaker;
+    WebSocketServerHandshaker handshaker;
 
     @Override
     public void messageReceived(ChannelHandlerContext context, Object message) throws IllegalAccessException, InstantiationException, InvocationTargetException {

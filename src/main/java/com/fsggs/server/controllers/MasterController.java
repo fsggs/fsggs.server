@@ -53,7 +53,7 @@ public class MasterController extends BaseController {
         @JsonProperty
         List<Server> servers = new LinkedList<>();
 
-        public VersionJSON(int offset, int limit) {
+        VersionJSON(int offset, int limit) {
             try {
                 servers = Application.dao.getServer().getAllScope(offset, limit);
             } catch (SQLException e) {
