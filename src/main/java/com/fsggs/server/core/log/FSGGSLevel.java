@@ -17,14 +17,14 @@ public class FSGGSLevel extends Level {
         if (sArg != null && sArg.toUpperCase().equals("FSGGS")) {
             return FSGGS;
         }
-        return (Level) toLevel(sArg, Level.DEBUG);
+        return toLevel(sArg, Level.DEBUG);
     }
 
     public static Level toLevel(int val) {
         if (val == FSGGS_INT) {
             return FSGGS;
         }
-        return (Level) toLevel(val, Level.DEBUG);
+        return toLevel(val, Level.DEBUG);
     }
 
     public static Level toLevel(int val, Level defaultLevel) {

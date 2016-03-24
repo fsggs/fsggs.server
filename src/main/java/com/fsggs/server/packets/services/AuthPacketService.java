@@ -1,9 +1,11 @@
 package com.fsggs.server.packets.services;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fsggs.server.Application;
 import com.fsggs.server.core.network.BaseNetworkPacket;
 import com.fsggs.server.core.session.SessionManager;
 import com.fsggs.server.entities.auth.User;
+import com.fsggs.server.entities.game.Character;
 import com.fsggs.server.packets.AuthPacket;
 import com.fsggs.server.utils.EMail;
 
@@ -219,5 +221,55 @@ public class AuthPacketService {
 
     private boolean checkPassword(String password, String userPassword) {
         return Objects.equals(password, userPassword);
+    }
+
+    private class APSResponse {
+        @JsonProperty("packet")
+        String packet;
+
+        @JsonProperty("action")
+        int action;
+
+        @JsonProperty("errors")
+        List<String> errors = new ArrayList<>();
+
+        @JsonProperty("result")
+        boolean result = false;
+
+        APSResponse(String packet, int action) {
+            this.packet = packet;
+            this.action = action;
+        }
+
+        void addError(String error) {
+            if (!errors.contains(error)) {
+                errors.add(error);
+            }
+        }
+    }
+
+    private class APSR_AuthWithLogin extends APSResponse {
+        @JsonProperty("id")
+        int id;
+
+        @JsonProperty("session")
+        String session;
+
+        @JsonProperty("characters")
+        Set<Character> characters = new LinkedHashSet<>();
+
+        APSR_AuthWithLogin(String packet, int action) {
+            super(packet, action);
+        }
+    }
+
+
+    private class APSR_ChangePassword extends APSResponse {
+        @JsonProperty("token")
+        String token;
+
+        APSR_ChangePassword(String packet, int action) {
+            super(packet, action);
+        }
     }
 }

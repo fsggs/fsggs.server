@@ -4,7 +4,6 @@ import com.fsggs.server.Application;
 import com.fsggs.server.entities.auth.User;
 import com.fsggs.server.entities.game.Character;
 import com.fsggs.server.entities.master.Server;
-import com.mysql.jdbc.CommunicationsException;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.FlywayException;
 import org.hibernate.Session;

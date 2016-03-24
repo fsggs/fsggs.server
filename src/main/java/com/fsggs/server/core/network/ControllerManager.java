@@ -13,7 +13,6 @@ import java.util.Set;
 
 import static io.netty.handler.codec.http.HttpMethod.*;
 import static org.reflections.ReflectionUtils.*;
-import static org.reflections.ReflectionUtils.withAnnotation;
 
 public class ControllerManager {
     private Map<String, RouteMethod> headRoutes = new HashMap<>();

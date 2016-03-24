@@ -118,7 +118,12 @@ abstract public class BaseNetworkPacket implements INetworkPacket {
     }
 
     protected void sendPacket() {
-        prepareData();
+        prepareData(this);
+        sendBuffer(out);
+    }
+
+    protected void sendPacket(Object object) {
+        prepareData(object);
         sendBuffer(out);
     }
 
@@ -126,16 +131,25 @@ abstract public class BaseNetworkPacket implements INetworkPacket {
         broadcastPacket(false);
     }
 
+    protected void broadcastPacket(Object object) {
+        broadcastPacket(object, false);
+    }
+
     protected void broadcastPacket(Boolean me) {
-        prepareData();
+        prepareData(this);
         broadcastBuffer(out, me);
     }
 
-    private void prepareData() {
+    protected void broadcastPacket(Object object, Boolean me) {
+        prepareData(object);
+        broadcastBuffer(out, me);
+    }
+
+    private void prepareData(Object object) {
         if (out.size() == 0) {
             try {
                 final ObjectMapper mapper = new ObjectMapper(cborFactory);
-                mapper.writeValue(out, this);
+                mapper.writeValue(out, object);
             } catch (IOException e) {
                 e.printStackTrace();
             }
