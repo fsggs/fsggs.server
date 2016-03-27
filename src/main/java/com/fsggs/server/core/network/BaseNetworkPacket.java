@@ -56,6 +56,10 @@ abstract public class BaseNetworkPacket implements INetworkPacket {
         return this;
     }
 
+    public String getPacket() {
+        return packet;
+    }
+
     @NetworkPacketParam("session")
     public INetworkPacket setSession(String session) {
         this.session = session;
