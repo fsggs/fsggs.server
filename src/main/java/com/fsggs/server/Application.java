@@ -3,6 +3,7 @@ package com.fsggs.server;
 import com.fsggs.server.configs.InitApplicationConfig;
 import com.fsggs.server.configs.InitApplicationDB;
 import com.fsggs.server.configs.InitLogoServer;
+import com.fsggs.server.core.FrameworkRegistry;
 import com.fsggs.server.core.db.DAOFactory;
 import com.fsggs.server.core.log.FSGGSLevel;
 import com.fsggs.server.core.network.ControllerManager;
@@ -29,7 +30,7 @@ import java.util.Objects;
 
 public class Application {
     final static public String APPLICATION_NAME = "FSGGS Server";
-    final static public String APPLICATION_VERSION = "0.0.3";
+    final static public String APPLICATION_VERSION = "0.0.4";
     final static public String APPLICATION_VERSION_ID = "Solar";
 
     final static public Level FSGGS = FSGGSLevel.FSGGS;
@@ -37,6 +38,7 @@ public class Application {
 
     static public SessionFactory db;
     static public DAOFactory dao;
+    static public FrameworkRegistry registry;
 
     static public boolean SSL = System.getProperty("ssl") != null;
     static public int PORT = 32500;

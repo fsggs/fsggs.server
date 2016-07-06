@@ -1,153 +1,45 @@
 package com.fsggs.server.core.network;
 
+import com.fsggs.server.Application;
+import com.fsggs.server.core.FrameworkRegistry;
 import io.netty.handler.codec.http.*;
-import org.reflections.Reflections;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-
-import static io.netty.handler.codec.http.HttpMethod.*;
-import static org.reflections.ReflectionUtils.*;
 
 public class ControllerManager {
-    private Map<String, RouteMethod> headRoutes = new HashMap<>();
-    private Map<String, RouteMethod> optionsRoutes = new HashMap<>();
 
-    private Map<String, RouteMethod> getRoutes = new HashMap<>();
-    private Map<String, RouteMethod> postRoutes = new HashMap<>();
-    private Map<String, RouteMethod> patchRoutes = new HashMap<>();
-    private Map<String, RouteMethod> putRoutes = new HashMap<>();
-    private Map<String, RouteMethod> deleteRoutes = new HashMap<>();
-    private Map<String, RouteMethod> traceRoutes = new HashMap<>();
-    private Map<String, RouteMethod> connectRoutes = new HashMap<>();
-
-    private Map<String, RouteMethod> routes = new HashMap<>();
-
-    private Map<String, String> contentTypes = new HashMap<>();
+    private Map<String, Map<String, FrameworkRegistry.FrameworkRoute>> cacheRoutes = new HashMap<>();
 
     public ControllerManager() {
-        Reflections reflections = new Reflections("com.fsggs.server.controllers");
-        Set<Class<?>> classes = reflections.getTypesAnnotatedWith(Controller.class);
-
-        for (Class<?> controllerClass : classes) {
-            @SuppressWarnings("unchecked")
-            Set<Method> routesMethods = getAllMethods(
-                    controllerClass,
-                    withModifier(Modifier.PUBLIC),
-                    withAnnotation(Route.class),
-                    withReturnType(String.class)
-            );
-
-            for (Method method : routesMethods) {
-                Annotation[] annotations = method.getDeclaredAnnotations();
-                for (Annotation annotation : annotations) {
-                    if (annotation instanceof Route) {
-                        String[] routePath = ((Route) annotation).PATH();
-                        String httpMethod = ((Route) annotation).METHOD();
-                        String contentType = ((Route) annotation).TYPE();
-
-                        for (String path : routePath) {
-                            switch (httpMethod) {
-                                case "HEAD":
-                                    headRoutes.put(path, new RouteMethod(path, controllerClass, method));
-                                    break;
-                                case "OPTIONS":
-                                    optionsRoutes.put(path, new RouteMethod(path, controllerClass, method));
-                                    break;
-                                case "GET":
-                                    getRoutes.put(path, new RouteMethod(path, controllerClass, method));
-                                    break;
-                                case "POST":
-                                    postRoutes.put(path, new RouteMethod(path, controllerClass, method));
-                                    break;
-                                case "PATCH":
-                                    patchRoutes.put(path, new RouteMethod(path, controllerClass, method));
-                                    break;
-                                case "PUT":
-                                    putRoutes.put(path, new RouteMethod(path, controllerClass, method));
-                                    break;
-                                case "DELETE":
-                                    deleteRoutes.put(path, new RouteMethod(path, controllerClass, method));
-                                    break;
-                                case "TRACE":
-                                    traceRoutes.put(path, new RouteMethod(path, controllerClass, method));
-                                    break;
-                                case "CONNECT":
-                                    connectRoutes.put(path, new RouteMethod(path, controllerClass, method));
-                                    break;
-                                default:
-                                    routes.put(path, new RouteMethod(path, controllerClass, method));
-                            }
-                            contentTypes.put(path, contentType);
-                        }
-                    }
-                }
-            }
+        String[] methods = {"*", "HEAD", "OPTIONS", "GET", "POST", "PUT", "PATCH", "DELETE", "TRACE", "CONNECT"};
+        for (String method : methods) {
+            Map<String, FrameworkRegistry.FrameworkRoute> routes = Application.registry.getRoutes(method);
+            if (routes != null) cacheRoutes.put(method, routes);
         }
     }
 
     public boolean hasController(String path, HttpMethod httpMethod) {
-        return httpMethod == HEAD && headRoutes.containsKey(path)
-                || httpMethod == OPTIONS && optionsRoutes.containsKey(path)
-                || httpMethod == GET && getRoutes.containsKey(path)
-                || httpMethod == POST && postRoutes.containsKey(path)
-                || httpMethod == PATCH && patchRoutes.containsKey(path)
-                || httpMethod == PUT && putRoutes.containsKey(path)
-                || httpMethod == DELETE && deleteRoutes.containsKey(path)
-                || httpMethod == TRACE && traceRoutes.containsKey(path)
-                || httpMethod == CONNECT && connectRoutes.containsKey(path)
-                || routes.containsKey(path);
-
+        String method = httpMethod.toString().toUpperCase();
+        return cacheRoutes.containsKey(method) && cacheRoutes.get(method).containsKey(path);
     }
 
     public BaseController getController(String path, HttpMethod httpMethod)
-            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        if (httpMethod == HEAD && headRoutes.containsKey(path)) {
-            return getController(headRoutes, path);
-        }
-        if (httpMethod == OPTIONS && optionsRoutes.containsKey(path)) {
-            return getController(optionsRoutes, path);
-        }
-        if (httpMethod == GET && getRoutes.containsKey(path)) {
-            return getController(getRoutes, path);
-        }
-        if (httpMethod == POST && postRoutes.containsKey(path)) {
-            return getController(postRoutes, path);
-        }
-        if (httpMethod == PATCH && patchRoutes.containsKey(path)) {
-            return getController(patchRoutes, path);
-        }
-        if (httpMethod == PUT && putRoutes.containsKey(path)) {
-            return getController(putRoutes, path);
-        }
-        if (httpMethod == DELETE && deleteRoutes.containsKey(path)) {
-            return getController(deleteRoutes, path);
-        }
-        if (httpMethod == TRACE && traceRoutes.containsKey(path)) {
-            return getController(traceRoutes, path);
-        }
-        if (httpMethod == CONNECT && connectRoutes.containsKey(path)) {
-            return getController(connectRoutes, path);
-        }
-        if (routes.containsKey(path)) {
-            return getController(routes, path);
-        }
-
+            throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        if (!hasController(path, httpMethod)) return null;
+        FrameworkRegistry.FrameworkRoute route = cacheRoutes.get(httpMethod.toString().toUpperCase()).get(path);
+        if (route != null) return getController(route);
         return null;
     }
 
-    private BaseController getController(Map<String, RouteMethod> routesMap, String path)
+    private BaseController getController(FrameworkRegistry.FrameworkRoute route)
             throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        BaseController controller = (BaseController) (routesMap.get(path).controller)
+        BaseController controller = (BaseController) (route.getClassController())
                 .getConstructor()
                 .newInstance();
 
-        controller.setAction(routesMap.get(path).method);
+        controller.setAction(route.getClassMethod());
         return controller;
     }
 
@@ -156,20 +48,10 @@ public class ControllerManager {
         return (String) controller.getAction().invoke(controller);
     }
 
-    public String getContentType(String uri) {
-        return contentTypes.get(uri);
-    }
-
-    private class RouteMethod {
-        String routePath;
-
-        Class<?> controller;
-        Method method;
-
-        RouteMethod(String routePath, Class<?> controller, Method method) {
-            this.routePath = routePath;
-            this.controller = controller;
-            this.method = method;
-        }
+    public String getContentType(String path, HttpMethod httpMethod) {
+        if (!hasController(path, httpMethod)) return "text/html; charset=UTF-8";
+        FrameworkRegistry.FrameworkRoute route = cacheRoutes.get(httpMethod.toString().toUpperCase()).get(path);
+        if (route != null) return route.getResponseType();
+        return "text/html; charset=UTF-8";
     }
 }

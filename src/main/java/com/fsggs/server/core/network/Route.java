@@ -8,9 +8,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Route {
-    String[] PATH() default {};
+    String PATH() default "";
 
-    String METHOD() default "";
+    String METHOD() default "*";
 
     String TYPE() default "text/html; charset=UTF-8";
 }

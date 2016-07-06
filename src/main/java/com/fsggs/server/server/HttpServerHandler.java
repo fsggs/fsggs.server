@@ -131,7 +131,7 @@ class HttpServerHandler {
 
                 response.headers().set(CONTENT_TYPE, controller.getHttpContentType() != null
                         ? controller.getHttpContentType()
-                        : Application.controllerManager.getContentType(uriPath));
+                        : Application.controllerManager.getContentType(uriPath, request.method()));
 
                 for (Map.Entry<AsciiString, String> header : controller.getHeaders().entrySet()) {
                     response.headers().set(header.getKey(), header.getValue());

@@ -3,8 +3,8 @@ package com.fsggs.server.server;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fsggs.server.Application;
+import com.fsggs.server.core.FrameworkRegistry;
 import com.fsggs.server.core.network.INetworkPacket;
-import com.fsggs.server.core.network.NetworkPacketParam;
 import com.fsggs.server.core.session.SessionManager;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -15,11 +15,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Map;
-import java.util.Set;
-
-import static org.reflections.ReflectionUtils.*;
 
 class WebSocketServerHandler {
 
@@ -77,36 +73,30 @@ class WebSocketServerHandler {
 
             if (data.containsKey("packet")) {
                 String packetName = data.get("packet").toString();
-                if (data.containsKey("packet") && Application.networkPackets.containsKey(packetName)) {
+
+                if (Application.registry.hasPacket(packetName)) {
+                    FrameworkRegistry.FrameworkPacket fPacket = Application.registry.getPacket(packetName);
+
                     try {
-                        Class<?> packetClass = Application.networkPackets.get(packetName);
-                        INetworkPacket packet = (INetworkPacket) packetClass.getConstructor(ChannelHandlerContext.class)
+                        INetworkPacket packet = (INetworkPacket) fPacket.getClassName().getConstructor(ChannelHandlerContext.class)
                                 .newInstance(context);
 
-                        @SuppressWarnings("unchecked")
-                        Set<Method> setters = getAllMethods(
-                                packetClass,
-                                withModifier(Modifier.PUBLIC),
-                                withPrefix("set"),
-                                withParametersCount(1),
-                                withAnnotation(NetworkPacketParam.class)
-                        );
-
-                        for (Method method : setters) {
-                            String annotatedParam = ((NetworkPacketParam) method.getDeclaredAnnotations()[0]).value();
-                            if (data.containsKey(annotatedParam)) {
-                                method.invoke(packet, data.get(annotatedParam));
+                        for(Map.Entry<String, Method> entry : fPacket.getParams().entrySet()){
+                            if (data.containsKey(entry.getKey())) {
+                                entry.getValue().invoke(packet, data.get(entry.getKey()));
                             }
                         }
 
                         packet.setData(data);
-                        if (data.containsKey("session")){
+                        if (data.containsKey("session")) {
                             packet.updateIdentity(data.get("session").toString());
                         } else packet.updateIdentity();
                         packet.receive();
+
                     } catch (NoSuchMethodException e) {
                         e.printStackTrace();
                     }
+
                 } else {
                     Application.logger.warn("Receive unregistered packet: \"" + packetName + "\"!");
                 }
