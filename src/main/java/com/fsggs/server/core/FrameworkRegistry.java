@@ -21,8 +21,6 @@ import java.util.*;
 import static org.reflections.ReflectionUtils.*;
 
 public class FrameworkRegistry {
-    private final static Level FSGGS = FSGGSLevel.FSGGS;
-    final static public Logger logger = LogManager.getLogger(Application.class);
 
     final private String[] ControllerNamespaces = {
             "com.fsggs.server.controllers"
@@ -38,7 +36,6 @@ public class FrameworkRegistry {
     public FrameworkRegistry() {
         registerControllers();
         registerPackets();
-        logger.log(FSGGS, "");
     }
 
     private void registerControllers() {

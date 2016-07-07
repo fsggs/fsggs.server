@@ -1,0 +1,21 @@
+--- #Server Config
+ip: 0.0.0.0
+port: 32500
+ssl: false
+client-url: '*'
+gate: ''
+
+master-server:
+  url: http://127.0.0.1:32500/
+  token: c1285e569b053955ab0d85ca3505900c
+  local: true
+
+db:
+  driver: com.mysql.jdbc.Driver
+  url-jdbc: mysql://localhost:3306/test
+  user: root
+  password: ''
+
+  dialect: org.hibernate.dialect.MySQLDialect
+  pool_size: 1
+  show_sql: false

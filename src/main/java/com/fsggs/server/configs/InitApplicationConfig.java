@@ -10,6 +10,7 @@ public class InitApplicationConfig {
     public InitApplicationConfig() {
 
         ServerConfig sg = new ServerConfig();
+        ServerConfigYML.Config sgy = (new ServerConfigYML()).getConfig();
         Application.serverConfig = sg.getConfig();
         Application.networkPackets = new NetworkPacketRegister().getNetworkPackets();
         Application.registry = new FrameworkRegistry();
