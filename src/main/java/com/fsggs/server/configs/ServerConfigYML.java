@@ -9,7 +9,6 @@ import com.fsggs.server.Application;
 import com.fsggs.server.utils.FileUtils;
 
 import java.io.*;
-import java.util.Date;
 
 class ServerConfigYML {
     private Config config;
