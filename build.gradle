@@ -1,8 +1,10 @@
 plugins {
-    id 'edu.sc.seis.launch4j' version '1.6.1'
+    id 'edu.sc.seis.launch4j' version '1.6.2'
+    id 'com.palantir.docker' version '0.8.1'
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
@@ -33,6 +35,10 @@ jar {
                 'Implementation-Version': version,
                 'Provider': 'Gradle'
     }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.10'
 }
 
 tasks.withType(JavaCompile) { task ->
@@ -95,4 +101,10 @@ dependencies {
     compile 'mysql:mysql-connector-java:5.1.38'
     compile 'javax.transaction:jta:1.1'
     compile 'org.flywaydb:flyway-core:4.0'
+}
+
+docker {
+    name "hub.docker.com/devinterx/fsggs:" + config.version
+    dockerfile "src/main/docker/Dockerfile"
+    dependsOn fatJar
 }

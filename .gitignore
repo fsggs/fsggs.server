@@ -8,3 +8,4 @@ logs/
 server.properties
 desktop.ini
 server.yml
+vagrant.lock
