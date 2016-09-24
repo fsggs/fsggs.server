@@ -97,7 +97,13 @@ public class FrameworkRegistry {
             Map<String, FrameworkRoute> routes = controller.getValue().getRoutes("*");
             for (Map.Entry<String, FrameworkRoute> route : routes.entrySet()) {
                 String method = route.getValue().getMethod();
-                registeredRoutes.get(method).put(route.getValue().getPath(), route.getValue());
+                if(Objects.equals(method, "*")) {
+                    for (String methodType : METHODS) {
+                        registeredRoutes.get(methodType).put(route.getValue().getPath(), route.getValue());
+                    }
+                } else {
+                    registeredRoutes.get(method).put(route.getValue().getPath(), route.getValue());
+                }
             }
         }
     }

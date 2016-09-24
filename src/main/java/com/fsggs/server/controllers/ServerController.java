@@ -12,7 +12,6 @@ import java.util.Map;
 
 @Controller
 public class ServerController extends BaseController {
-
     @Route(PATH = "/")
     public String indexPage() {
         Map<String, Object> data = new HashMap<>();

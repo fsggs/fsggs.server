@@ -35,9 +35,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static io.netty.handler.codec.http.HttpVersion.*;
 
 class HttpServerHandler {
-    private static final Pattern INSECURE_URI = Pattern.compile(".*[<>&\"].*");
-    private static final Pattern ALLOWED_FILE_NAME = Pattern.compile("[A-Za-z0-9][-_A-Za-z0-9\\.]*");
-
     private static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
     private static final String HTTP_DATE_GMT_TIMEZONE = "GMT";
     private static final int HTTP_CACHE_SECONDS = 60;
@@ -73,6 +70,7 @@ class HttpServerHandler {
             return;
         }
 
+        // Controller
         if (Application.registry.hasController(uriPath, request.method())) {
 
             Map<String, List<String>> parameters = new QueryStringDecoder(request.uri()).parameters();
@@ -89,7 +87,7 @@ class HttpServerHandler {
 
             CharSequence value = request.headers().get(HttpHeaderNames.COOKIE);
             Set<Cookie> cookies = (Objects.equals(value, null))
-                    ? new TreeSet<Cookie>()
+                    ? new TreeSet<>()
                     : ServerCookieDecoder.decode(value.toString());
 
             Map<String, String> httpData = new HashMap<>();
@@ -157,74 +155,9 @@ class HttpServerHandler {
             return;
         }
 
-        final String separator = FileSystems.getDefault().getSeparator();
-        final String rootPath = FileUtils.getApplicationPath() + separator + Application.PUBLIC_DIR;
-
-
-        Path path = Paths.get(rootPath + sanitizeUri(uriPath));
-        if (!Files.exists(path)) {
-            try {
-                URL resourceURL = ClassLoader.getSystemResource(Application.PUBLIC_DIR + sanitizeUri(uriPath));
-                if (resourceURL == null) {
-                    sendErrorPage(NOT_FOUND, context, request);
-                    Application.logger.error("Invalid URL [" + request.method() + "]: " + uri);
-                    return;
-                }
-
-                if (FileUtils.isRunnedInJar()) {
-                    File file;
-                    InputStream input = ClassLoader.getSystemResourceAsStream(Application.PUBLIC_DIR + sanitizeUri(uriPath));
-
-                    String fileName = resourceURL.toString().substring(resourceURL.toString().lastIndexOf('/') + 1, resourceURL.toString().length());
-
-                    file = File.createTempFile(fileName + '.', ".tmp");
-
-                    OutputStream out = new FileOutputStream(file);
-                    int read;
-                    byte[] bytes = new byte[1024];
-
-                    while ((read = input.read(bytes)) != -1) {
-                        out.write(bytes, 0, read);
-                    }
-
-                    sendFile(file, fileName, context, request);
-
-                    file.deleteOnExit();
-                } else {
-                    path = Paths.get(resourceURL.toURI());
-                    if (!Files.exists(path)) throw new IOException("Invalid URL [" + request.method() + "]: " + uri);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                sendErrorPage(NOT_FOUND, context, request);
-                Application.logger.error("Invalid URL [" + request.method() + "]: " + uri);
-                return;
-            }
-        }
-
-        try {
-            if (Files.isHidden(path)) {
-                sendErrorPage(NOT_FOUND, context, request);
-                return;
-            }
-
-            if (Files.isDirectory(path)) {
-                if (uriPath.endsWith("/")) {
-                    sendListingPage(context, path);
-                } else {
-                    redirect(context, uriPath + '/');
-                }
-                sendListingPage(context, path);
-                return;
-            }
-
-            if (Files.isRegularFile(path)) {
-                sendFile(path, path.getFileName().toString(), context, request);
-            }
-        } catch (IOException e) {
-            sendErrorPage(INTERNAL_SERVER_ERROR, context, request);
-            return;
-        }
+        //Static files
+        HttpStaticHandler staticHandler = new HttpStaticHandler(context, request, uri);
+        if (staticHandler.isMatch()) return;
 
         sendErrorPage(NOT_FOUND, context, request);
     }
@@ -232,7 +165,7 @@ class HttpServerHandler {
     /**
      * Send http response
      */
-    private static void sendHttpResponse(ChannelHandlerContext context, FullHttpRequest req, FullHttpResponse res) {
+    static private void sendHttpResponse(ChannelHandlerContext context, FullHttpRequest req, FullHttpResponse res) {
         // Send the response and close the connection if necessary.
         ChannelFuture f = context.channel().writeAndFlush(res);
         if (!HttpHeaderUtil.isKeepAlive(req) || res.status().code() != 200) {
@@ -260,7 +193,7 @@ class HttpServerHandler {
     /**
      * Return websocket path
      */
-    private static String getWebSocketLocation(FullHttpRequest req) {
+    static private String getWebSocketLocation(FullHttpRequest req) {
         String location = req.headers().get(HOST) + Application.WEBSOCKET_PATH;
         if (Application.SSL) {
             return "wss://" + location;
@@ -272,22 +205,22 @@ class HttpServerHandler {
     /**
      * Send page
      */
-    private static void sendPage(File file, ChannelHandlerContext context, FullHttpRequest request) throws IOException {
+    static private void sendPage(File file, ChannelHandlerContext context, FullHttpRequest request) throws IOException {
         ByteBuf buffer = Unpooled.copiedBuffer(Files.readAllBytes(file.toPath()));
         sendPage(buffer, context, request);
     }
 
-    private static void sendPage(String response, ChannelHandlerContext context, FullHttpRequest request, String type)
+    static private void sendPage(String response, ChannelHandlerContext context, FullHttpRequest request, String type)
             throws IOException {
         ByteBuf buffer = Unpooled.copiedBuffer(response.getBytes());
         sendPage(buffer, context, request, type);
     }
 
-    private static void sendPage(ByteBuf buffer, ChannelHandlerContext context, FullHttpRequest request) {
+    static private void sendPage(ByteBuf buffer, ChannelHandlerContext context, FullHttpRequest request) {
         sendPage(buffer, context, request, "text/html; charset=UTF-8");
     }
 
-    private static void sendPage(ByteBuf buffer, ChannelHandlerContext context, FullHttpRequest request, String type) {
+    static private void sendPage(ByteBuf buffer, ChannelHandlerContext context, FullHttpRequest request, String type) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, buffer);
 
         response.headers().set(CONTENT_TYPE, type);
@@ -300,7 +233,7 @@ class HttpServerHandler {
     /**
      * Send parsed page
      */
-    private static void sendParsedPage(String path, Map<String, Object> data, ChannelHandlerContext context, FullHttpRequest request) {
+    static private void sendParsedPage(String path, Map<String, Object> data, ChannelHandlerContext context, FullHttpRequest request) {
         data.put("serverTitle", Application.APPLICATION_NAME);
         data.put("serverVersion", Application.APPLICATION_VERSION);
 
@@ -315,14 +248,14 @@ class HttpServerHandler {
         sendPage(content, context, request);
     }
 
-    private static void sendParsedPage(File file, Map<String, Object> data, ChannelHandlerContext context, FullHttpRequest request) {
+    static private void sendParsedPage(File file, Map<String, Object> data, ChannelHandlerContext context, FullHttpRequest request) {
         sendParsedPage(file.toPath().toAbsolutePath().toString(), data, context, request);
     }
 
     /**
      * Send error page
      */
-    private static void sendErrorPage(HttpResponseStatus status, ChannelHandlerContext context, FullHttpRequest request) {
+    static void sendErrorPage(HttpResponseStatus status, ChannelHandlerContext context, FullHttpRequest request) {
         Map<String, Object> data = new HashMap<>();
         data.put("errorCode", status.code());
         data.put("errorMessage", status.reasonPhrase());
@@ -347,67 +280,19 @@ class HttpServerHandler {
     /**
      * Send redirect
      */
-    private static void redirect(ChannelHandlerContext context, String uri) {
+    static void redirect(ChannelHandlerContext context, String uri) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, FOUND);
         response.headers().set(LOCATION, uri);
 
         context.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
-    private static void sendListingPage(ChannelHandlerContext context, Path path) {
-        FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK);
-        response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
-
-        StringBuilder buf = new StringBuilder()
-                .append("<!DOCTYPE html>\r\n")
-                .append("<html><head><title>")
-                .append("Listing of: ")
-                .append(path.toAbsolutePath().toString())
-                .append("</title></head><body>\r\n")
-
-                .append("<h3>Listing of: ")
-                .append(path.toAbsolutePath().toString())
-                .append("</h3>\r\n")
-
-                .append("<ul>")
-                .append("<li><a href=\"../\">..</a></li>\r\n");
-
-        try {
-            for (Path p : FileUtils.fileList(path)) {
-                if (Files.isHidden(p) || !Files.isReadable(p)) {
-                    continue;
-                }
-
-                String name = p.getFileName().toString();
-                if (!ALLOWED_FILE_NAME.matcher(name).matches()) {
-                    continue;
-                }
-
-                buf.append("<li><a href=\"")
-                        .append(name)
-                        .append("\">")
-                        .append(name)
-                        .append("</a></li>\r\n");
-            }
-        } catch (NullPointerException | IOException e) {
-            e.printStackTrace();
-        }
-
-        buf.append("</ul></body></html>\r\n");
-        ByteBuf buffer = Unpooled.copiedBuffer(buf, CharsetUtil.UTF_8);
-        response.content().writeBytes(buffer);
-        buffer.release();
-
-        // Close the connection as soon as the error message is sent.
-        context.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-    }
-
-    private static void sendFile(Path path, String fileName, ChannelHandlerContext context, FullHttpRequest request) throws IOException {
+    static void sendFile(Path path, String fileName, ChannelHandlerContext context, FullHttpRequest request) throws IOException {
         File file = path.toFile();
         sendFile(file, fileName, context, request);
     }
 
-    private static void sendFile(File file, String fileName, ChannelHandlerContext context, FullHttpRequest request) throws IOException {
+    static void sendFile(File file, String fileName, ChannelHandlerContext context, FullHttpRequest request) throws IOException {
         RandomAccessFile raf;
         MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
         String fileMimeType = mimeTypesMap.getContentType(file.getPath());
@@ -426,7 +311,7 @@ class HttpServerHandler {
         // Add Pebble parser
         if (Objects.equals(fileExtension, "peb")) {
             // TODO:: HashMap to static Mapper
-            sendParsedPage(file, new HashMap<String, Object>(), context, request);
+            sendParsedPage(file, new HashMap<>(), context, request);
             return;
         }
 
@@ -487,27 +372,6 @@ class HttpServerHandler {
         if (!HttpHeaderUtil.isKeepAlive(request)) {
             lastContentFuture.addListener(ChannelFutureListener.CLOSE);
         }
-    }
-
-    private static String sanitizeUri(String uri) {
-        try {
-            uri = URLDecoder.decode(uri, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new Error(e);
-        }
-
-        if (uri.isEmpty() || uri.charAt(0) != '/') {
-            return null;
-        }
-
-        if (uri.contains(File.separator + '.') ||
-                uri.contains('.' + File.separator) ||
-                uri.charAt(0) == '.' || uri.charAt(uri.length() - 1) == '.' ||
-                INSECURE_URI.matcher(uri).matches()) {
-            return null;
-        }
-
-        return uri;
     }
 
     /**
