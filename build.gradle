@@ -105,6 +105,6 @@ dependencies {
 
 docker {
     name "hub.docker.com/devinterx/fsggs:" + config.version
-    dockerfile "src/main/docker/Dockerfile"
+    dockerfile "Dockerfile."
     dependsOn fatJar
 }

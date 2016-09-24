@@ -48,8 +48,8 @@ public class Application {
     static public String CLIENT_URL = "*";
 
     static public Map<String, String> serverConfig;
-    static public Map<String, Class<?>> networkPackets;
-    static public ControllerManager controllerManager;
+    //static public Map<String, Class<?>> networkPackets;
+    static public ControllerManager controllerManager; //TODO:: disable this
     static public boolean run = false;
 
     private final EventLoopGroup bossGroup = new NioEventLoopGroup(1);

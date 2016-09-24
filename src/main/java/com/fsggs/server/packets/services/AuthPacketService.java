@@ -26,7 +26,7 @@ public class AuthPacketService {
     }
 
     public APSR_AuthWithLogin tryAuthWithLogin(String login, String password) {
-        APSR_AuthWithLogin response = new APSR_AuthWithLogin(ap.getPacket(), ap.getAction());
+        APSR_AuthWithLogin response = new APSR_AuthWithLogin(ap.getPacketName(), ap.getAction());
         if (!Objects.equals(login, "")) {
             try {
                 User user = Application.dao.getUser().findByLoginWithCharacters(login);
@@ -61,7 +61,7 @@ public class AuthPacketService {
     }
 
     public APSResponse tryRegister(String login, String password) {
-        APSResponse response = new APSResponse(ap.getPacket(), ap.getAction());
+        APSResponse response = new APSResponse(ap.getPacketName(), ap.getAction());
         if (!Objects.equals(login, "")) {
             try {
                 User user = Application.dao.getUser().findByLogin(login);
@@ -92,7 +92,7 @@ public class AuthPacketService {
     }
 
     public APSResponse tryActivateByToken(String login, String token) {
-        APSResponse response = new APSResponse(ap.getPacket(), ap.getAction());
+        APSResponse response = new APSResponse(ap.getPacketName(), ap.getAction());
         if (!Objects.equals(login, "")) {
             try {
                 User user = Application.dao.getUser().findByLoginWithToken(login, token);
@@ -111,7 +111,7 @@ public class AuthPacketService {
     }
 
     public APSResponse tryRememberPassword(String login, String token, String password) {
-        APSResponse response = new APSResponse(ap.getPacket(), ap.getAction());
+        APSResponse response = new APSResponse(ap.getPacketName(), ap.getAction());
         if (!Objects.equals(login, "")) {
             try {
                 User user;
@@ -143,7 +143,7 @@ public class AuthPacketService {
     }
 
     public APSR_ChangePassword tryChangePassword(String password, String token) {
-        APSR_ChangePassword response = new APSR_ChangePassword(ap.getPacket(), ap.getAction());
+        APSR_ChangePassword response = new APSR_ChangePassword(ap.getPacketName(), ap.getAction());
         if (!ap.getAuth().isGuest()) {
             String login = ap.getAuth().getUser().getLogin();
             User user = ap.getAuth().getUser();
@@ -181,7 +181,7 @@ public class AuthPacketService {
     }
 
     public APSResponse tryReconnect(String login, String session) {
-        APSResponse response = new APSResponse(ap.getPacket(), ap.getAction());
+        APSResponse response = new APSResponse(ap.getPacketName(), ap.getAction());
         if (!Objects.equals(login, "") && !Objects.equals(session, "")) {
             try {
                 User user = Application.dao.getUser().findByLogin(login);
@@ -212,7 +212,7 @@ public class AuthPacketService {
     }
 
     public APSResponse tryLogout() {
-        APSResponse response = new APSResponse(ap.getPacket(), ap.getAction());
+        APSResponse response = new APSResponse(ap.getPacketName(), ap.getAction());
         if (!ap.getAuth().isGuest()) {
             SessionManager.logout(ap.getContext().channel());
             ap.updateIdentity();

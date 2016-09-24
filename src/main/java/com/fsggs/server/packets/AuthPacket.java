@@ -30,7 +30,7 @@ public class AuthPacket extends BaseNetworkPacket {
 
     private String token = "";
 
-    protected APSResponse response = new APSResponse(this.getPacket(), this.getAction());
+    protected APSResponse response = new APSResponse(this.getPacketName(), this.getAction());
 
     public AuthPacket(ChannelHandlerContext context) {
         super(context);

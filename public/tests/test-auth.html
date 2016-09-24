@@ -20,7 +20,7 @@
                 socket.binaryType = "arraybuffer";
                 socket.onmessage = function (event) {
                     var data = CBOR.decode(event.data);
-                    console.log('receive: ' + data.packet, data);
+                    console.log('receive: ' + (data.packet || 'packet'), data);
                 };
                 socket.onopen = function (event) {
                     console.info("Web Socket opened!");
@@ -150,12 +150,23 @@
                 }
             }
 
+            function sendSimplePacket() {
+                if (socket.readyState == WebSocket.OPEN) {
+                    var message = CBOR.encode([0, 2.234, "Hello Server"]);
+                    socket.send(message);
+                    console.log('send: Send Simple Packet', CBOR.decode(message));
+                } else {
+                    alert("The socket is not open.");
+                }
+            }
+
             $(document).on('click', 'input[name=1-submit]', sendLogin);
             $(document).on('click', 'input[name=2-submit]', sendRegister);
             $(document).on('click', 'input[name=5-submit]', sendActivate);
             $(document).on('click', 'input[name=3-submit]', sendRemember);
             $(document).on('click', 'input[name=4-submit]', sendChangePassword);
             $(document).on('click', 'input[name=6-submit]', sendReconnect);
+            $(document).on('click', 'input[name=7-submit]', sendSimplePacket);
 
             $(document).on('click', 'input[name=0-submit]', sendLogout);
         });
@@ -188,6 +199,8 @@
     <input name="6-login" type="text" value="test@localhost" placeholder="Login"/>
     <input name="6-session" type="text" value="" size="32" placeholder="Session"/>
     <input name="6-submit" type="button" value="Send Auth Packet (Reconnect)"/><br/>
+
+    <input name="7-submit" type="button" value="Send Simple Test Packet"/><br/>
 
     <input name="0-submit" type="button" value="Send Auth Packet (Logout)"/><br/>
 </form>

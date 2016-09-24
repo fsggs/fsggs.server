@@ -6,23 +6,19 @@ import com.fsggs.server.core.network.*;
 import com.fsggs.server.core.session.NetworkPacketAuthLevel;
 import io.netty.channel.ChannelHandlerContext;
 
-import static com.fsggs.server.core.session.AuthLevel.*;
-
-import java.util.Map;
 import java.util.Objects;
 
-@NetworkPacket("TestPacket")
+import static com.fsggs.server.core.session.AuthLevel.GUEST;
+
+@NetworkPacket
+@NetworkPacketId(0)
 @NetworkPacketAuthLevel(GUEST)
-public class TestPacket extends BaseNetworkPacket {
+public class SimpleTestPacket extends BaseNetworkPacket {
 
     @JsonProperty("testMessage")
     private String message;
 
-    public TestPacket(ChannelHandlerContext context, Map data) {
-        super(context, data);
-    }
-
-    public TestPacket(ChannelHandlerContext context) {
+    public SimpleTestPacket(ChannelHandlerContext context) {
         super(context);
     }
 
@@ -39,15 +35,12 @@ public class TestPacket extends BaseNetworkPacket {
 
     @Override
     public INetworkPacket send() {
-
-        sendPacket();
-        broadcastPacket();
-
+        sendPacket(new String[]{String.valueOf(this.packetId), message});
         Application.logger.info("Send: " + packet + ": " + message);
         return this;
     }
 
-    @NetworkPacketParam("testMessage")
+    @NetworkPacketParam("2")
     public INetworkPacket setMessage(String message) {
         this.message = message;
         return this;

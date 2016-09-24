@@ -1,16 +1,8 @@
 package com.fsggs.server.core;
 
-import com.fsggs.server.Application;
-import com.fsggs.server.core.log.FSGGSLevel;
-import com.fsggs.server.core.network.Controller;
-import com.fsggs.server.core.network.NetworkPacket;
-import com.fsggs.server.core.network.NetworkPacketParam;
-import com.fsggs.server.core.network.Route;
+import com.fsggs.server.core.network.*;
 import com.fsggs.server.core.session.NeedAuthorization;
 import com.fsggs.server.core.session.NeedPermission;
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
@@ -21,6 +13,8 @@ import java.util.*;
 import static org.reflections.ReflectionUtils.*;
 
 public class FrameworkRegistry {
+    static public final String SYSTEM_PACKET_NAME = "__@NetworkPacket#_";
+    static public final String SYSTEM_UNKNOWN_PACKET = "__@UnknownNetworkPacket";
 
     final private String[] ControllerNamespaces = {
             "com.fsggs.server.controllers"
@@ -35,7 +29,7 @@ public class FrameworkRegistry {
 
     public FrameworkRegistry() {
         registerControllers();
-        registerPackets();
+        registerNetworkPackets();
     }
 
     private void registerControllers() {
@@ -90,7 +84,7 @@ public class FrameworkRegistry {
         }
     }
 
-    private void registerPackets() {
+    private void registerNetworkPackets() {
         for (String namespace : PacketNamespaces) {
             Reflections reflections = new Reflections(namespace);
             Set<Class<?>> classes = reflections.getTypesAnnotatedWith(NetworkPacket.class);
@@ -101,6 +95,7 @@ public class FrameworkRegistry {
 
                 Annotation[] annotations = classDefinition.getDeclaredAnnotations();
                 authAnnotation(annotations, packet);
+
                 if (Objects.equals(packet.getName(), "")) packet.setName(className);
 
                 @SuppressWarnings("unchecked")
@@ -130,7 +125,11 @@ public class FrameworkRegistry {
         for (Annotation annotation : annotations) {
             if (annotation instanceof NetworkPacket) {
                 String name = ((NetworkPacket) annotation).value();
-                if (!Objects.equals(name, "")) classDefinition.setName(name);
+                if (!Objects.equals(name, SYSTEM_UNKNOWN_PACKET)) classDefinition.setName(name);
+            }
+            if (annotation instanceof NetworkPacketId) {
+                int id = ((NetworkPacketId) annotation).value();
+                if (id >= 0) classDefinition.setName(SYSTEM_PACKET_NAME + id);
             }
             if (annotation instanceof Controller) {
                 String name = ((Controller) annotation).value();

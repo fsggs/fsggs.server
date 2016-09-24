@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
+import com.fsggs.server.core.FrameworkRegistry;
 import com.fsggs.server.core.session.Session;
 import com.fsggs.server.core.session.SessionManager;
 import com.fsggs.server.server.SocketServerHandler;
@@ -25,6 +26,7 @@ import java.util.Objects;
  */
 abstract public class BaseNetworkPacket implements INetworkPacket {
 
+    @JsonIgnore
     final protected ChannelHandlerContext context;
     final private CBORFactory cborFactory = new CBORFactory();
 
@@ -32,7 +34,10 @@ abstract public class BaseNetworkPacket implements INetworkPacket {
     protected Session.UserIdentity auth;
 
     @JsonProperty
-    protected String packet = "UnknownPacket";
+    protected String packet = FrameworkRegistry.SYSTEM_UNKNOWN_PACKET;
+
+    @JsonProperty
+    protected int packetId = -1;
 
     @JsonProperty
     protected String session = "";
@@ -51,12 +56,20 @@ abstract public class BaseNetworkPacket implements INetworkPacket {
     }
 
     @NetworkPacketParam("packet")
-    public INetworkPacket setPacket(String packet) {
+    public INetworkPacket setPacketName(String packet) {
         this.packet = packet;
         return this;
     }
 
-    public String getPacket() {
+    @NetworkPacketParam("0")
+    public INetworkPacket setPacketNameWithId(String id) {
+        this.packetId = Integer.parseInt(id);
+        this.packet = FrameworkRegistry.SYSTEM_PACKET_NAME + id;
+        return this;
+    }
+
+    @JsonIgnore
+    public String getPacketName() {
         return packet;
     }
 
