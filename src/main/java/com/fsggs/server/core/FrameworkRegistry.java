@@ -3,9 +3,11 @@ package com.fsggs.server.core;
 import com.fsggs.server.core.network.*;
 import com.fsggs.server.core.session.NeedAuthorization;
 import com.fsggs.server.core.session.NeedPermission;
+import io.netty.handler.codec.http.HttpMethod;
 import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -24,11 +26,15 @@ public class FrameworkRegistry {
             "com.fsggs.server.packets"
     };
 
+    private String[] METHODS = {"*", "HEAD", "OPTIONS", "GET", "POST", "PUT", "PATCH", "DELETE", "TRACE", "CONNECT"};
+
     private Map<String, FrameworkController> registeredControllers = new HashMap<>();
+    private Map<String, Map<String, FrameworkRoute>> registeredRoutes = new HashMap<>();
     private Map<String, FrameworkPacket> registeredPackets = new HashMap<>();
 
     public FrameworkRegistry() {
         registerControllers();
+        registerRoutes();
         registerNetworkPackets();
     }
 
@@ -80,6 +86,18 @@ public class FrameworkRegistry {
                     }
                 }
                 if (controller.size() > 0) registeredControllers.put(className, controller);
+            }
+        }
+    }
+
+    private void registerRoutes() {
+        for (String methodType : METHODS) registeredRoutes.put(methodType, new HashMap<>());
+
+        for (Map.Entry<String, FrameworkController> controller : registeredControllers.entrySet()) {
+            Map<String, FrameworkRoute> routes = controller.getValue().getRoutes("*");
+            for (Map.Entry<String, FrameworkRoute> route : routes.entrySet()) {
+                String method = route.getValue().getMethod();
+                registeredRoutes.get(method).put(route.getValue().getPath(), route.getValue());
             }
         }
     }
@@ -162,6 +180,35 @@ public class FrameworkRegistry {
 
     public boolean hasPacket(String name) {
         return registeredPackets.containsKey(name);
+    }
+
+    public BaseController getController(String path, HttpMethod method) {
+        Map<String, FrameworkRoute> routes = registeredRoutes.get(method.toString());
+        if (routes.containsKey(path)) {
+            try {
+                BaseController controller = (BaseController) (routes.get(path).getClassController())
+                        .getConstructor()
+                        .newInstance();
+                controller.setAction(routes.get(path).getClassMethod());
+                return controller;
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    public String getRouteContentType(String path, HttpMethod method) {
+        Map<String, FrameworkRoute> routes = registeredRoutes.get(method.toString());
+        if (routes.containsKey(path)) {
+            return routes.get(path).getResponseType();
+        }
+        return "text/html; charset=UTF-8";
+    }
+
+    public boolean hasController(String path, HttpMethod method) {
+        Map<String, FrameworkRoute> routes = registeredRoutes.get(method.toString());
+        return routes.containsKey(path);
     }
 
     interface FrameworkElement {

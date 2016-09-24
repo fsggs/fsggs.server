@@ -6,7 +6,6 @@ import com.fsggs.server.configs.InitLogoServer;
 import com.fsggs.server.core.FrameworkRegistry;
 import com.fsggs.server.core.db.DAOFactory;
 import com.fsggs.server.core.log.FSGGSLevel;
-import com.fsggs.server.core.network.ControllerManager;
 import com.fsggs.server.server.SocketServerInit;
 import com.fsggs.server.services.master.MasterService;
 import io.netty.bootstrap.ServerBootstrap;
@@ -48,8 +47,6 @@ public class Application {
     static public String CLIENT_URL = "*";
 
     static public Map<String, String> serverConfig;
-    //static public Map<String, Class<?>> networkPackets;
-    static public ControllerManager controllerManager; //TODO:: disable this
     static public boolean run = false;
 
     private final EventLoopGroup bossGroup = new NioEventLoopGroup(1);

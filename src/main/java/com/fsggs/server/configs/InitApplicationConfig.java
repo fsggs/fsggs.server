@@ -2,7 +2,6 @@ package com.fsggs.server.configs;
 
 import com.fsggs.server.Application;
 import com.fsggs.server.core.FrameworkRegistry;
-import com.fsggs.server.core.network.ControllerManager;
 
 public class InitApplicationConfig {
 
@@ -12,7 +11,6 @@ public class InitApplicationConfig {
         ServerConfigYML.Config sgy = (new ServerConfigYML()).getConfig();
         Application.serverConfig = sg.getConfig();
         Application.registry = new FrameworkRegistry();
-        Application.controllerManager = new ControllerManager(); // TODO:: remove this
 
         // ssl
         if (Application.serverConfig.containsKey("ssl")) {

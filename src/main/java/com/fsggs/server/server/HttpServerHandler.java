@@ -1,6 +1,7 @@
 package com.fsggs.server.server;
 
 import com.fsggs.server.Application;
+import com.fsggs.server.core.FrameworkRegistry;
 import com.fsggs.server.core.network.BaseController;
 import com.fsggs.server.core.session.SessionManager;
 import com.fsggs.server.utils.FileUtils;
@@ -72,7 +73,7 @@ class HttpServerHandler {
             return;
         }
 
-        if (Application.controllerManager.hasController(uriPath, request.method())) {
+        if (Application.registry.hasController(uriPath, request.method())) {
 
             Map<String, List<String>> parameters = new QueryStringDecoder(request.uri()).parameters();
             Map<String, String> params = new HashMap<>();
@@ -111,8 +112,9 @@ class HttpServerHandler {
                 decoder.destroy();
             }
 
+            //TODO:: Framework registry
             try {
-                BaseController controller = Application.controllerManager.getController(
+                BaseController controller = Application.registry.getController(
                         uriPath,
                         request.method()
                 );
@@ -124,14 +126,14 @@ class HttpServerHandler {
                         .setParams(params)
                         .setData(httpData);
 
-                String result = Application.controllerManager.runController(controller);
+                String result = (String) controller.getAction().invoke(controller);
                 ByteBuf buffer = Unpooled.copiedBuffer(result.getBytes());
 
                 FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, buffer);
 
                 response.headers().set(CONTENT_TYPE, controller.getHttpContentType() != null
                         ? controller.getHttpContentType()
-                        : Application.controllerManager.getContentType(uriPath, request.method()));
+                        : Application.registry.getRouteContentType(uriPath, request.method()));
 
                 for (Map.Entry<AsciiString, String> header : controller.getHeaders().entrySet()) {
                     response.headers().set(header.getKey(), header.getValue());
@@ -144,10 +146,7 @@ class HttpServerHandler {
 
                 sendHttpResponse(context, request, response);
                 return;
-            } catch (NoSuchMethodException
-                    | IllegalAccessException
-                    | InstantiationException
-                    | InvocationTargetException e) {
+            } catch (IllegalAccessException | InvocationTargetException e) {
                 e.printStackTrace();
             }
         }
