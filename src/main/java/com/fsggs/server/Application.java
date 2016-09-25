@@ -16,6 +16,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -67,7 +68,7 @@ public class Application {
     private ChannelFuture start(InetSocketAddress address) throws Exception {
         if (SSL) {
             SelfSignedCertificate ssc = new SelfSignedCertificate();
-            sslContext = SslContext.newServerContext(ssc.certificate(), ssc.privateKey());
+            sslContext = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
         }
 
         ServerBootstrap boot = new ServerBootstrap();

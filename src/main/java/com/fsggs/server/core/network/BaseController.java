@@ -1,10 +1,13 @@
 package com.fsggs.server.core.network;
 
+import com.fsggs.server.server.HttpServerHandler;
 import com.mitchellbosecke.pebble.PebbleEngine;
 import com.mitchellbosecke.pebble.error.PebbleException;
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
-import io.netty.handler.codec.AsciiString;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.util.AsciiString;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -30,8 +33,14 @@ abstract public class BaseController {
     private HttpResponseStatus httpResponseStatus = OK;
     private String httpContentType = null;
 
-    private FullHttpRequest request;
+    private ChannelHandlerContext context;
+    private HttpRequest request;
     private String URI;
+
+    public BaseController setContext(ChannelHandlerContext context) {
+        this.context = context;
+        return this;
+    }
 
     public BaseController setURI(String URI) {
         this.URI = URI;
@@ -57,11 +66,11 @@ abstract public class BaseController {
         return this;
     }
 
-    public FullHttpRequest getRequest() {
+    public HttpRequest getRequest() {
         return request;
     }
 
-    public BaseController setRequest(FullHttpRequest request) {
+    public BaseController setRequest(HttpRequest request) {
         this.request = request;
         return this;
     }
@@ -135,5 +144,10 @@ abstract public class BaseController {
         }
 
         return result;
+    }
+
+    protected String redirect(String url) {
+        HttpServerHandler.redirect(context, url);
+        return url;
     }
 }

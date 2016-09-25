@@ -1,7 +1,6 @@
 package com.fsggs.server.server;
 
 import com.fsggs.server.Application;
-import com.fsggs.server.core.FrameworkRegistry;
 import com.fsggs.server.core.network.BaseController;
 import com.fsggs.server.core.session.SessionManager;
 import com.fsggs.server.utils.FileUtils;
@@ -11,44 +10,52 @@ import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
-import io.netty.handler.codec.AsciiString;
 import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.handler.codec.http.multipart.*;
 import io.netty.handler.codec.http.websocketx.*;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedFile;
+import io.netty.util.AsciiString;
 import io.netty.util.CharsetUtil;
 
 import javax.activation.MimetypesFileTypeMap;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.net.URLDecoder;
+import java.nio.channels.FileChannel;
 import java.nio.file.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.regex.Pattern;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.*;
 import static io.netty.handler.codec.http.HttpMethod.*;
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static io.netty.handler.codec.http.HttpVersion.*;
 
-class HttpServerHandler {
+public class HttpServerHandler {
     private static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
     private static final String HTTP_DATE_GMT_TIMEZONE = "GMT";
     private static final int HTTP_CACHE_SECONDS = 60;
 
     private SocketServerHandler handler;
 
-    HttpServerHandler(SocketServerHandler handler, ChannelHandlerContext context, FullHttpRequest msg) {
+    static {
+        DiskFileUpload.deleteOnExitTemporaryFile = true; // should delete file on exit (in normal exit)
+        DiskFileUpload.baseDirectory = null; // system temp directory
+        DiskAttribute.deleteOnExitTemporaryFile = true; // should delete file on exit (in normal exit)
+        DiskAttribute.baseDirectory = null; // system temp directory
+    }
+
+    HttpServerHandler(SocketServerHandler handler, ChannelHandlerContext context, HttpRequest msg) {
         this.handler = handler;
         handlerHttpRequest(context, msg);
     }
 
-    private void handlerHttpRequest(ChannelHandlerContext context, FullHttpRequest request) {
+    private void handlerHttpRequest(ChannelHandlerContext context, HttpRequest request) {
         // Handle a bad request.
         if (!request.decoderResult().isSuccess()) {
+            //Application.logger.error(request.decoderResult().toString());
             sendErrorPage(BAD_REQUEST, context, request);
             return;
         }
@@ -72,7 +79,6 @@ class HttpServerHandler {
 
         // Controller
         if (Application.registry.hasController(uriPath, request.method())) {
-
             Map<String, List<String>> parameters = new QueryStringDecoder(request.uri()).parameters();
             Map<String, String> params = new HashMap<>();
             if (parameters.size() > 0) {
@@ -88,25 +94,60 @@ class HttpServerHandler {
             CharSequence value = request.headers().get(HttpHeaderNames.COOKIE);
             Set<Cookie> cookies = (Objects.equals(value, null))
                     ? new TreeSet<>()
-                    : ServerCookieDecoder.decode(value.toString());
+                    : ServerCookieDecoder.STRICT.decode(value.toString());
 
-            Map<String, String> httpData = new HashMap<>();
+            Map<String, String> postData = new HashMap<>();
 
             if (request.method() == HEAD || request.method() == POST || request.method() == PUT
                     || request.method() == PATCH || request.method() == DELETE) {
                 HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(new DefaultHttpDataFactory(false), request);
+
                 List<InterfaceHttpData> data = decoder.getBodyHttpDatas();
 
                 for (InterfaceHttpData attributeData : data) {
                     if (attributeData.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute) {
                         Attribute attribute = (Attribute) attributeData;
                         try {
-                            httpData.put(attributeData.getName(), attribute.getValue());
+                            postData.put(attributeData.getName(), attribute.getValue());
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
+                    if (attributeData.getHttpDataType() == InterfaceHttpData.HttpDataType.FileUpload) {
+                        FileUpload fileUpload = (FileUpload) attributeData;
+                        Application.logger.warn("\r\n" +
+                                "FileName: " + fileUpload.getFilename() + "\r\n" +
+                                "Mime: " + fileUpload.getContentType() + "\r\n" +
+                                "Name: " + fileUpload.getName() + "\r\n" +
+                                "Size: " + fileUpload.length()
+                        );
+
+//                        try {
+//                            if (fileUpload.isCompleted()) {
+//                                File file = new File("C:\\test\\" + fileUpload.getFilename());
+//                                if (!file.exists()) {
+//                                    //noinspection ResultOfMethodCallIgnored
+//                                    file.createNewFile();
+//                                }
+//                                try (FileChannel inputChannel = new FileInputStream(fileUpload.getFile()).getChannel();
+//                                     FileChannel outputChannel = new FileOutputStream(file).getChannel()) {
+//                                    outputChannel.transferFrom(inputChannel, 0, inputChannel.size());
+//                                }
+//                            } else {
+//                                Application.logger.info("File " + fileUpload.getFilename() + " to be continued, but should not!");
+//                            }
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+                    }
                 }
+
+                //TODO in future, uploading files
+                //if (HttpPostRequestDecoder.isMultipart(request)
+                //        && (request.method() == POST || request.method() == PUT)) {
+                //
+                //}
+
                 decoder.destroy();
             }
 
@@ -118,11 +159,12 @@ class HttpServerHandler {
                 );
 
                 controller
+                        .setContext(context)
                         .setRequest(request)
                         .setURI(uriPath)
                         .setCookies(cookies)
                         .setParams(params)
-                        .setData(httpData);
+                        .setData(postData);
 
                 String result = (String) controller.getAction().invoke(controller);
                 ByteBuf buffer = Unpooled.copiedBuffer(result.getBytes());
@@ -140,7 +182,7 @@ class HttpServerHandler {
                 response.setProtocolVersion(controller.getHttpVersion());
                 response.setStatus(controller.getHttpResponseStatus());
 
-                HttpHeaderUtil.setContentLength(response, buffer.readableBytes());
+                HttpUtil.setContentLength(response, buffer.readableBytes());
 
                 sendHttpResponse(context, request, response);
                 return;
@@ -165,10 +207,10 @@ class HttpServerHandler {
     /**
      * Send http response
      */
-    static private void sendHttpResponse(ChannelHandlerContext context, FullHttpRequest req, FullHttpResponse res) {
+    static private void sendHttpResponse(ChannelHandlerContext context, HttpRequest req, FullHttpResponse res) {
         // Send the response and close the connection if necessary.
         ChannelFuture f = context.channel().writeAndFlush(res);
-        if (!HttpHeaderUtil.isKeepAlive(req) || res.status().code() != 200) {
+        if (!HttpUtil.isKeepAlive(req) || res.status().code() != 200) {
             f.addListener(ChannelFutureListener.CLOSE);
         }
     }
@@ -176,7 +218,7 @@ class HttpServerHandler {
     /**
      * Try websocket handshake
      */
-    private void tryHandshake(ChannelHandlerContext context, FullHttpRequest request) {
+    private void tryHandshake(ChannelHandlerContext context, HttpRequest request) {
         WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(
                 getWebSocketLocation(request), null, true);
         handler.handshaker = wsFactory.newHandshaker(request);
@@ -193,7 +235,7 @@ class HttpServerHandler {
     /**
      * Return websocket path
      */
-    static private String getWebSocketLocation(FullHttpRequest req) {
+    static private String getWebSocketLocation(HttpRequest req) {
         String location = req.headers().get(HOST) + Application.WEBSOCKET_PATH;
         if (Application.SSL) {
             return "wss://" + location;
@@ -205,27 +247,27 @@ class HttpServerHandler {
     /**
      * Send page
      */
-    static private void sendPage(File file, ChannelHandlerContext context, FullHttpRequest request) throws IOException {
+    static private void sendPage(File file, ChannelHandlerContext context, HttpRequest request) throws IOException {
         ByteBuf buffer = Unpooled.copiedBuffer(Files.readAllBytes(file.toPath()));
         sendPage(buffer, context, request);
     }
 
-    static private void sendPage(String response, ChannelHandlerContext context, FullHttpRequest request, String type)
+    static private void sendPage(String response, ChannelHandlerContext context, HttpRequest request, String type)
             throws IOException {
         ByteBuf buffer = Unpooled.copiedBuffer(response.getBytes());
         sendPage(buffer, context, request, type);
     }
 
-    static private void sendPage(ByteBuf buffer, ChannelHandlerContext context, FullHttpRequest request) {
+    static private void sendPage(ByteBuf buffer, ChannelHandlerContext context, HttpRequest request) {
         sendPage(buffer, context, request, "text/html; charset=UTF-8");
     }
 
-    static private void sendPage(ByteBuf buffer, ChannelHandlerContext context, FullHttpRequest request, String type) {
+    static private void sendPage(ByteBuf buffer, ChannelHandlerContext context, HttpRequest request, String type) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, buffer);
 
         response.headers().set(CONTENT_TYPE, type);
         response.headers().set(ACCESS_CONTROL_ALLOW_ORIGIN, Application.CLIENT_URL);
-        HttpHeaderUtil.setContentLength(response, buffer.readableBytes());
+        HttpUtil.setContentLength(response, buffer.readableBytes());
 
         sendHttpResponse(context, request, response);
     }
@@ -233,7 +275,7 @@ class HttpServerHandler {
     /**
      * Send parsed page
      */
-    static private void sendParsedPage(String path, Map<String, Object> data, ChannelHandlerContext context, FullHttpRequest request) {
+    static private void sendParsedPage(String path, Map<String, Object> data, ChannelHandlerContext context, HttpRequest request) {
         data.put("serverTitle", Application.APPLICATION_NAME);
         data.put("serverVersion", Application.APPLICATION_VERSION);
 
@@ -248,14 +290,14 @@ class HttpServerHandler {
         sendPage(content, context, request);
     }
 
-    static private void sendParsedPage(File file, Map<String, Object> data, ChannelHandlerContext context, FullHttpRequest request) {
+    static private void sendParsedPage(File file, Map<String, Object> data, ChannelHandlerContext context, HttpRequest request) {
         sendParsedPage(file.toPath().toAbsolutePath().toString(), data, context, request);
     }
 
     /**
      * Send error page
      */
-    static void sendErrorPage(HttpResponseStatus status, ChannelHandlerContext context, FullHttpRequest request) {
+    static void sendErrorPage(HttpResponseStatus status, ChannelHandlerContext context, HttpRequest request) {
         Map<String, Object> data = new HashMap<>();
         data.put("errorCode", status.code());
         data.put("errorMessage", status.reasonPhrase());
@@ -272,7 +314,7 @@ class HttpServerHandler {
 
         response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
         response.headers().set(ACCESS_CONTROL_ALLOW_ORIGIN, Application.CLIENT_URL);
-        HttpHeaderUtil.setContentLength(response, content.readableBytes());
+        HttpUtil.setContentLength(response, content.readableBytes());
 
         sendHttpResponse(context, request, response);
     }
@@ -280,24 +322,23 @@ class HttpServerHandler {
     /**
      * Send redirect
      */
-    static void redirect(ChannelHandlerContext context, String uri) {
+    static public void redirect(ChannelHandlerContext context, String uri) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, FOUND);
         response.headers().set(LOCATION, uri);
 
         context.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
-    static void sendFile(Path path, String fileName, ChannelHandlerContext context, FullHttpRequest request) throws IOException {
+    static void sendFile(Path path, String fileName, ChannelHandlerContext context, HttpRequest request) throws IOException {
         File file = path.toFile();
         sendFile(file, fileName, context, request);
     }
 
-    static void sendFile(File file, String fileName, ChannelHandlerContext context, FullHttpRequest request) throws IOException {
+    static void sendFile(File file, String fileName, ChannelHandlerContext context, HttpRequest request) throws IOException {
         RandomAccessFile raf;
         MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
         String fileMimeType = mimeTypesMap.getContentType(file.getPath());
         String fileExtension = FileUtils.getFileExtension(file);
-
 
         if (Objects.equals(fileExtension, "tmp")) {
             fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1);
@@ -324,12 +365,12 @@ class HttpServerHandler {
         long fileLength = raf.length();
 
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
-        HttpHeaderUtil.setContentLength(response, fileLength);
+        HttpUtil.setContentLength(response, fileLength);
 
         response.headers().set(CONTENT_TYPE, fileMimeType);
 
         setDateAndCacheHeaders(response, file);
-        if (HttpHeaderUtil.isKeepAlive(request)) {
+        if (HttpUtil.isKeepAlive(request)) {
             response.headers().set(CONNECTION, HttpHeaderValues.KEEP_ALIVE);
         }
 
@@ -369,7 +410,7 @@ class HttpServerHandler {
             }
         });
 
-        if (!HttpHeaderUtil.isKeepAlive(request)) {
+        if (!HttpUtil.isKeepAlive(request)) {
             lastContentFuture.addListener(ChannelFutureListener.CLOSE);
         }
     }

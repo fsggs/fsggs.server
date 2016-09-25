@@ -7,8 +7,8 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.util.CharsetUtil;
 
 import java.io.*;
@@ -33,7 +33,7 @@ class HttpStaticHandler {
 
     private boolean status = false;
 
-    HttpStaticHandler(ChannelHandlerContext context, FullHttpRequest request, String uri) {
+    HttpStaticHandler(ChannelHandlerContext context, HttpRequest request, String uri) {
         final String separator = FileSystems.getDefault().getSeparator();
         final String rootPath = FileUtils.getApplicationPath() + separator + Application.PUBLIC_DIR;
 
@@ -102,6 +102,7 @@ class HttpStaticHandler {
 
             if (Files.isRegularFile(path)) {
                 HttpServerHandler.sendFile(path, path.getFileName().toString(), context, request);
+                status = true;
             }
         } catch (IOException e) {
             HttpServerHandler.sendErrorPage(INTERNAL_SERVER_ERROR, context, request);

@@ -4,8 +4,8 @@ import com.fsggs.server.Application;
 import com.fsggs.server.core.network.BaseController;
 import com.fsggs.server.core.network.Controller;
 import com.fsggs.server.core.network.Route;
-import io.netty.handler.codec.AsciiString;
-import io.netty.handler.codec.http.Cookie;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.util.AsciiString;
 
 import java.util.HashMap;
 import java.util.Map;
