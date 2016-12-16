@@ -1,13 +1,14 @@
 package com.fsggs.server.core.session;
 
 import com.fsggs.server.Application;
-import com.fsggs.server.entities.auth.User;
+import com.fsggs.server.models.auth.User;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelId;
 
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+
 
 public class SessionManager {
     static private Map<ChannelId, Session> channelSessions = new HashMap<>();
@@ -87,9 +88,9 @@ public class SessionManager {
 
     static public void logoutFromDB(Channel channel) {
         try {
-            User user = Application.dao.getUser().getById(channelSessions.get(channel.id()).getUserIdentity().getUserId());
+            User user = (User) User.getById(channelSessions.get(channel.id()).getUserIdentity().getUserId());
             user.setSession("");
-            Application.dao.getUser().update(user);
+            User.update(user);
         } catch (SQLException e) {
             e.printStackTrace();
         }

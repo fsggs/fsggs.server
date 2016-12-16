@@ -23,7 +23,6 @@ import io.netty.util.CharsetUtil;
 import javax.activation.MimetypesFileTypeMap;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.channels.FileChannel;
 import java.nio.file.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -38,14 +37,8 @@ public class HttpServerHandler {
     private static final String HTTP_DATE_GMT_TIMEZONE = "GMT";
     private static final int HTTP_CACHE_SECONDS = 60;
 
+    private HttpPostRequestDecoder decoder;
     private SocketServerHandler handler;
-
-    static {
-        DiskFileUpload.deleteOnExitTemporaryFile = true; // should delete file on exit (in normal exit)
-        DiskFileUpload.baseDirectory = null; // system temp directory
-        DiskAttribute.deleteOnExitTemporaryFile = true; // should delete file on exit (in normal exit)
-        DiskAttribute.baseDirectory = null; // system temp directory
-    }
 
     HttpServerHandler(SocketServerHandler handler, ChannelHandlerContext context, HttpRequest msg) {
         this.handler = handler;
@@ -71,7 +64,7 @@ public class HttpServerHandler {
         // Handshake
         if (request.method() == GET && "/".equals(uriPath)
                 && request.headers().contains("Upgrade")
-                && Objects.equals(request.headers().get("Upgrade").toString().toLowerCase(), "websocket")) {
+                && Objects.equals(request.headers().get("Upgrade").toLowerCase(), "websocket")) {
 
             tryHandshake(context, request);
             return;
@@ -97,10 +90,11 @@ public class HttpServerHandler {
                     : ServerCookieDecoder.STRICT.decode(value.toString());
 
             Map<String, String> postData = new HashMap<>();
+            Map<String, FileUpload> filesData = new HashMap<>();
 
             if (request.method() == HEAD || request.method() == POST || request.method() == PUT
                     || request.method() == PATCH || request.method() == DELETE) {
-                HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(new DefaultHttpDataFactory(false), request);
+                decoder = new HttpPostRequestDecoder(new DefaultHttpDataFactory(false), request);
 
                 List<InterfaceHttpData> data = decoder.getBodyHttpDatas();
 
@@ -115,43 +109,12 @@ public class HttpServerHandler {
                     }
                     if (attributeData.getHttpDataType() == InterfaceHttpData.HttpDataType.FileUpload) {
                         FileUpload fileUpload = (FileUpload) attributeData;
-                        Application.logger.warn("\r\n" +
-                                "FileName: " + fileUpload.getFilename() + "\r\n" +
-                                "Mime: " + fileUpload.getContentType() + "\r\n" +
-                                "Name: " + fileUpload.getName() + "\r\n" +
-                                "Size: " + fileUpload.length()
-                        );
-
-//                        try {
-//                            if (fileUpload.isCompleted()) {
-//                                File file = new File("C:\\test\\" + fileUpload.getFilename());
-//                                if (!file.exists()) {
-//                                    //noinspection ResultOfMethodCallIgnored
-//                                    file.createNewFile();
-//                                }
-//                                try (FileChannel inputChannel = new FileInputStream(fileUpload.getFile()).getChannel();
-//                                     FileChannel outputChannel = new FileOutputStream(file).getChannel()) {
-//                                    outputChannel.transferFrom(inputChannel, 0, inputChannel.size());
-//                                }
-//                            } else {
-//                                Application.logger.info("File " + fileUpload.getFilename() + " to be continued, but should not!");
-//                            }
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
+                        filesData.put(fileUpload.getName(), fileUpload);
                     }
                 }
-
-                //TODO in future, uploading files
-                //if (HttpPostRequestDecoder.isMultipart(request)
-                //        && (request.method() == POST || request.method() == PUT)) {
-                //
-                //}
-
-                decoder.destroy();
             }
 
-            //TODO:: Framework registry
+            //TODO:: Framework registry, auth
             try {
                 BaseController controller = Application.registry.getController(
                         uriPath,
@@ -164,9 +127,11 @@ public class HttpServerHandler {
                         .setURI(uriPath)
                         .setCookies(cookies)
                         .setParams(params)
-                        .setData(postData);
+                        .setData(postData)
+                        .setFiles(filesData);
 
                 String result = (String) controller.getAction().invoke(controller);
+
                 ByteBuf buffer = Unpooled.copiedBuffer(result.getBytes());
 
                 FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, buffer);
@@ -185,11 +150,14 @@ public class HttpServerHandler {
                 HttpUtil.setContentLength(response, buffer.readableBytes());
 
                 sendHttpResponse(context, request, response);
+                resetDecoder();
                 return;
             } catch (IllegalAccessException | InvocationTargetException e) {
                 e.printStackTrace();
             }
         }
+
+        resetDecoder();
 
         // Allow only GET methods.
         if (request.method() != GET) {
@@ -202,6 +170,13 @@ public class HttpServerHandler {
         if (staticHandler.isMatch()) return;
 
         sendErrorPage(NOT_FOUND, context, request);
+    }
+
+    private void resetDecoder() {
+        if (decoder != null) {
+            decoder.cleanFiles();
+            decoder.destroy();
+        }
     }
 
     /**

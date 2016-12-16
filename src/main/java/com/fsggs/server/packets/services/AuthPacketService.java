@@ -1,11 +1,10 @@
 package com.fsggs.server.packets.services;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fsggs.server.Application;
 import com.fsggs.server.core.network.BaseNetworkPacket;
 import com.fsggs.server.core.session.SessionManager;
-import com.fsggs.server.entities.auth.User;
-import com.fsggs.server.entities.game.Character;
+import com.fsggs.server.models.auth.User;
+import com.fsggs.server.models.game.Character;
 import com.fsggs.server.packets.AuthPacket;
 import com.fsggs.server.utils.EMail;
 
@@ -29,7 +28,7 @@ public class AuthPacketService {
         APSR_AuthWithLogin response = new APSR_AuthWithLogin(ap.getPacketName(), ap.getAction());
         if (!Objects.equals(login, "")) {
             try {
-                User user = Application.dao.getUser().findByLoginWithCharacters(login);
+                User user = User.findByLoginWithCharacters(login);
                 if (user != null) {
                     if (checkPassword(password, user.getPassword())) {
                         String session = BaseNetworkPacket.md5(login + String.valueOf(System.currentTimeMillis()));
@@ -37,7 +36,7 @@ public class AuthPacketService {
                         user.setLoginDate(new Date());
                         if (!Objects.equals(user.getToken(), "")) user.setToken("");
 
-                        Application.dao.getUser().update(user);
+                        User.update(user);
                         String encodedSession = BaseNetworkPacket.md5(session + f.format(user.getLoginDate()));
 
                         ap.setAction(response.action = 1);
@@ -64,7 +63,7 @@ public class AuthPacketService {
         APSResponse response = new APSResponse(ap.getPacketName(), ap.getAction());
         if (!Objects.equals(login, "")) {
             try {
-                User user = Application.dao.getUser().findByLogin(login);
+                User user = User.findByLogin(login);
                 if (user == null) {
                     user = new User(login, encryptPassword(password));
                     user.setAccess(1);
@@ -77,7 +76,7 @@ public class AuthPacketService {
                     } else {
                         user.setStatus(1);
                     }
-                    Application.dao.getUser().add(user);
+                    User.add(user);
 
                     response.result = true;
                     if (AuthPacket.AUTO_LOGIN) tryAuthWithLogin(login, password);
@@ -95,10 +94,10 @@ public class AuthPacketService {
         APSResponse response = new APSResponse(ap.getPacketName(), ap.getAction());
         if (!Objects.equals(login, "")) {
             try {
-                User user = Application.dao.getUser().findByLoginWithToken(login, token);
+                User user = User.findByLoginWithToken(login, token);
                 if (user != null) {
                     user.setStatus(1);
-                    Application.dao.getUser().update(user);
+                    User.update(user);
                     response.result = true;
                 } else response.addError(E_USER_NOT_FOUND_BY_TOKEN);
             } catch (Exception e) {
@@ -116,21 +115,21 @@ public class AuthPacketService {
             try {
                 User user;
                 if (Objects.equals(token, "")) {
-                    user = Application.dao.getUser().findByLogin(login);
+                    user = User.findByLogin(login);
                     if (user != null) {
                         token = BaseNetworkPacket.md5(login + String.valueOf(System.currentTimeMillis()));
                         user.setToken(token);
                         EMail.send(login, "Reset FSGGS Account Password", "Your token: " + token, "fsggs@localhost");
                         response.result = true;
-                        Application.dao.getUser().update(user);
+                        User.update(user);
                     } else response.addError(E_USER_NOT_FOUND);
                 } else {
-                    user = Application.dao.getUser().findByLoginWithToken(login, token, 1);
+                    user = User.findByLoginWithToken(login, token, 1);
                     if (user != null) {
                         user.setPassword(encryptPassword(password));
                         user.setToken("");
                         response.result = true;
-                        Application.dao.getUser().update(user);
+                        User.update(user);
                     } else response.addError(E_USER_NOT_FOUND_BY_TOKEN);
                 }
             } catch (Exception e) {
@@ -152,7 +151,7 @@ public class AuthPacketService {
                     if (Objects.equals(user.getToken(), token)) {
                         user.setPassword(encryptPassword(password));
                         user.setToken("");
-                        Application.dao.getUser().update(user);
+                        User.update(user);
 
                         response.result = true;
                     } else response.addError(E_TOKEN_NOT_FOUND);
@@ -166,7 +165,7 @@ public class AuthPacketService {
                         token = BaseNetworkPacket.md5(login + String.valueOf(System.currentTimeMillis()));
 
                         user.setToken(token);
-                        Application.dao.getUser().update(user);
+                        User.update(user);
 
                         response.token = token;
                         response.result = true;
@@ -184,7 +183,7 @@ public class AuthPacketService {
         APSResponse response = new APSResponse(ap.getPacketName(), ap.getAction());
         if (!Objects.equals(login, "") && !Objects.equals(session, "")) {
             try {
-                User user = Application.dao.getUser().findByLogin(login);
+                User user = User.findByLogin(login);
                 if (user != null) {
                     if (Objects.equals(BaseNetworkPacket.md5(user.getSession() + f.format(user.getLoginDate())), session)) {
 
@@ -193,7 +192,7 @@ public class AuthPacketService {
                         user.setLoginDate(new Date());
                         if (!Objects.equals(user.getToken(), "")) user.setToken("");
 
-                        Application.dao.getUser().update(user);
+                        User.update(user);
                         String encodedSession = BaseNetworkPacket.md5(s + f.format(user.getLoginDate()));
 
                         response.result = true;

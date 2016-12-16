@@ -1,8 +1,7 @@
-package com.fsggs.server.entities.master;
+package com.fsggs.server.models.master;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fsggs.server.core.db.BaseEntity;
 import org.hibernate.annotations.*;
 import org.hibernate.annotations.Cache;
 
@@ -14,29 +13,12 @@ import java.util.Date;
 @Entity
 @Table(name = "master_server")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class Server extends BaseEntity {
-    @JsonProperty
-    @Column(name = "name")
+public class Server extends ServerModel implements IServer {
     private String name;
-
-    @JsonProperty
-    @Column(name = "address")
     private String address;
-
-    @JsonIgnore
-    @Column(name = "token")
     private String token;
 
-    @JsonIgnore
-    @CreationTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at")
     private Date createdDate;
-
-    @JsonIgnore
-    @UpdateTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updated_at")
     private Date updatedDate;
 
     public Server() {
@@ -47,7 +29,8 @@ public class Server extends BaseEntity {
         this.address = address;
     }
 
-
+    @JsonProperty
+    @Column(name = "name")
     public String getName() {
         return name;
     }
@@ -56,7 +39,8 @@ public class Server extends BaseEntity {
         this.name = name;
     }
 
-
+    @JsonProperty
+    @Column(name = "address")
     public String getAddress() {
         return address;
     }
@@ -65,7 +49,8 @@ public class Server extends BaseEntity {
         this.address = address;
     }
 
-
+    @JsonIgnore
+    @Column(name = "token")
     public String getToken() {
         return token;
     }
@@ -74,7 +59,10 @@ public class Server extends BaseEntity {
         this.token = token;
     }
 
-
+    @JsonIgnore
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created_at")
     public Date getCreatedDate() {
         return createdDate;
     }
@@ -83,7 +71,10 @@ public class Server extends BaseEntity {
         this.createdDate = createdDate;
     }
 
-
+    @JsonIgnore
+    @UpdateTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "updated_at")
     public Date getUpdatedDate() {
         return updatedDate;
     }

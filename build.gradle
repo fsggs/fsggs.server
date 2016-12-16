@@ -1,6 +1,5 @@
 plugins {
     id 'edu.sc.seis.launch4j' version '1.6.2'
-    id 'com.palantir.docker' version '0.8.1'
 }
 
 repositories {
@@ -90,6 +89,7 @@ dependencies {
     compile 'io.netty:netty-all:4.1.5.Final'
     compile 'com.mitchellbosecke:pebble:2.0.0'
 
+    compile 'com.google.code.gson:gson:2.8.0'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.7.2'
     compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.7.2'
     compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.7.2'
@@ -101,10 +101,4 @@ dependencies {
     compile 'mysql:mysql-connector-java:5.1.38'
     compile 'javax.transaction:jta:1.1'
     compile 'org.flywaydb:flyway-core:4.0'
-}
-
-docker {
-    name "hub.docker.com/devinterx/fsggs:" + config.version
-    dockerfile "Dockerfile."
-    dependsOn fatJar
 }

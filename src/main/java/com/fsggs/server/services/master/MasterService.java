@@ -34,10 +34,10 @@ public class MasterService {
 //
 //        try {
 //            URL url = new URL(masterServerURL);
-//            Map<String, Object> params = new LinkedHashMap<>();
+//            SpaceMap<String, Object> params = new LinkedHashMap<>();
 //            params.put("token", token);
 //            StringBuilder postData = new StringBuilder();
-//            for (Map.Entry<String, Object> param : params.entrySet()) {
+//            for (SpaceMap.Entry<String, Object> param : params.entrySet()) {
 //                if (postData.length() != 0) postData.append('&');
 //                postData.append(URLEncoder.encode(param.getKey(), "UTF-8"));
 //                postData.append('=');

@@ -7,7 +7,7 @@ import com.fsggs.server.Application;
 import com.fsggs.server.core.network.BaseController;
 import com.fsggs.server.core.network.Controller;
 import com.fsggs.server.core.network.Route;
-import com.fsggs.server.entities.master.Server;
+import com.fsggs.server.models.master.Server;
 
 import java.io.Serializable;
 import java.sql.SQLException;
@@ -55,7 +55,7 @@ public class MasterController extends BaseController {
 
         VersionJSON(int offset, int limit) {
             try {
-                servers = Application.dao.getServer().getAllScope(offset, limit);
+                servers = Server.getAllScope(offset, limit);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -68,9 +68,9 @@ public class MasterController extends BaseController {
 
         if (token != null && Boolean.valueOf(Application.serverConfig.get("master_server_local"))) {
             try {
-                List<Server> servers = Application.dao.getServer().getByToken(token);
+                List<Server> servers = Server.getByToken(token);
                 if (servers.size() > 0) {
-                    Application.dao.getServer().update(servers.get(0));
+                    Server.update(servers.get(0));
                     return "{status:good}";
                 }
             } catch (SQLException e) {

@@ -17,8 +17,6 @@
         <!-- Database connection settings -->
         <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
         <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/test</property>
-        <property name="hibernate.connection.username">root</property>
-        <property name="hibernate.connection.password"></property>
 
         <!-- C3P0 -->
         <property name="hibernate.connection.provider_class">org.hibernate.c3p0.internal.C3P0ConnectionProvider
@@ -52,9 +50,15 @@
         <property name="hibernate.generate_statistics">false</property>
         <property name="hibernate.cache.use_structured_entries">true</property>
 
-        <mapping class="com.fsggs.server.entities.auth.User"/>
-        <mapping class="com.fsggs.server.entities.master.Server"/>
-        <mapping class="com.fsggs.server.entities.game.Character"/>
+        <mapping class="com.fsggs.server.models.auth.User"/>
+        <mapping class="com.fsggs.server.models.master.Server"/>
+        <mapping class="com.fsggs.server.models.game.Character"/>
+
+        <mapping class="com.fsggs.server.models.game.maps.Map"/>
+        <mapping class="com.fsggs.server.models.game.maps.Universe"/>
+        <mapping class="com.fsggs.server.models.game.maps.Galaxy"/>
+        <mapping class="com.fsggs.server.models.game.maps.Solar"/>
+        <mapping class="com.fsggs.server.models.game.objects.GameObject"/>
     </session-factory>
 
 </hibernate-configuration>

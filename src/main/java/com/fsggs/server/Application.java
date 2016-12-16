@@ -4,8 +4,8 @@ import com.fsggs.server.configs.InitApplicationConfig;
 import com.fsggs.server.configs.InitApplicationDB;
 import com.fsggs.server.configs.InitLogoServer;
 import com.fsggs.server.core.FrameworkRegistry;
-import com.fsggs.server.core.db.DAOFactory;
 import com.fsggs.server.core.log.FSGGSLevel;
+import com.fsggs.server.game.Game;
 import com.fsggs.server.server.SocketServerInit;
 import com.fsggs.server.services.master.MasterService;
 import io.netty.bootstrap.ServerBootstrap;
@@ -37,7 +37,6 @@ public class Application {
     final static public Logger logger = LogManager.getLogger(Application.class);
 
     static public SessionFactory db;
-    static public DAOFactory dao;
     static public FrameworkRegistry registry;
 
     static public boolean SSL = System.getProperty("ssl") != null;
@@ -59,7 +58,6 @@ public class Application {
         new InitApplicationConfig();
         new InitLogoServer();
         db = (new InitApplicationDB(this)).getSessionFactory();
-        dao = DAOFactory.getInstance();
 
         /* Service Hack */
         (new MasterService()).updateMasterServerTimeTask();
@@ -85,6 +83,8 @@ public class Application {
     }
 
     private void stop(boolean customEvent) {
+        Game game = Game.getInstance();
+        if (game != null) game.stop();
         Application.run = false;
         if (db != null) db.close();
         logger.info("Server shutdown.");
@@ -111,6 +111,7 @@ public class Application {
 
             Application.run = true;
             MasterService.updateMasterServerTime();
+            Game.initialize();
             future.channel().closeFuture().syncUninterruptibly();
         } catch (BindException e) {
             if (Objects.equals(e.getMessage(), "Address already in use: bind")) {

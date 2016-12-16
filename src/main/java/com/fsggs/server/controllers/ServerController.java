@@ -5,6 +5,7 @@ import com.fsggs.server.core.network.BaseController;
 import com.fsggs.server.core.network.Controller;
 import com.fsggs.server.core.network.Route;
 import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.multipart.FileUpload;
 import io.netty.util.AsciiString;
 
 import java.util.HashMap;
@@ -49,5 +50,32 @@ public class ServerController extends BaseController {
         }
 
         return result + BR;
+    }
+
+    @Route(PATH = "/upload", METHOD = "POST")
+    public String testUpload() {
+        String result = getURI() + BR;
+        result += BR + "FILES:" + BR;
+        for (Map.Entry<String, FileUpload> entry : files.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue().toString();
+            result += key + ":" + value + BR;
+        }
+
+        if (files.containsKey("file")) {
+//            try {
+//                FileUpload fileUpload = files.get("file");
+//                File file = new File("E:\\test\\" + fileUpload.getFilename());
+//                if (!file.exists()) {
+//                    //noinspection ResultOfMethodCallIgnored
+//                    file.createNewFile();
+//                }
+//                fileUpload("file", file);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+        }
+
+        return result;
     }
 }

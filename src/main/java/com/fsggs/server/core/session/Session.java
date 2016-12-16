@@ -1,8 +1,7 @@
 package com.fsggs.server.core.session;
 
-import com.fsggs.server.Application;
 import com.fsggs.server.core.network.BaseNetworkPacket;
-import com.fsggs.server.entities.auth.User;
+import com.fsggs.server.models.auth.User;
 import io.netty.channel.ChannelId;
 
 import java.text.Format;
@@ -27,7 +26,7 @@ public class Session {
         this.id = channelId;
         this.session = session;
         try {
-            User user = Application.dao.getUser().findByLogin(login);
+            User user = User.findByLogin(login);
             Format f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             if (user != null && Objects.equals(
                     BaseNetworkPacket.md5(user.getSession() + f.format(user.getLoginDate())), session)) {

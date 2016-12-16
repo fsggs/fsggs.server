@@ -1,9 +1,8 @@
-package com.fsggs.server.entities.auth;
+package com.fsggs.server.models.auth;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fsggs.server.core.db.BaseEntity;
-import com.fsggs.server.entities.game.Character;
+import com.fsggs.server.models.game.Character;
 import org.hibernate.annotations.*;
 import org.hibernate.annotations.Cache;
 
@@ -19,52 +18,19 @@ import java.util.*;
 @FetchProfile(name = "user-with-characters", fetchOverrides = {
         @FetchProfile.FetchOverride(entity = User.class, association = "characters", mode = FetchMode.JOIN)
 })
-public class User extends BaseEntity {
-    @JsonProperty
-    @Column(name = "login")
+public class User extends UserModel implements IUser {
     private String login;
-
-    @JsonIgnore
-    @Column(name = "password")
     private String password;
-
-    @JsonProperty
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "last_login_at")
-    private Date loginDate;
-
-    @JsonProperty
-    @CreationTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at")
-    private Date registerDate;
-
-    @JsonProperty
-    @UpdateTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updated_at")
-    private Date updatedDate;
-
-    @JsonProperty
-    @Column(name = "status")
+    private String session;
+    private String token;
     private int status;
-
-    @JsonProperty
-    @Column(name = "access")
     private int access;
 
-    @JsonIgnore
-    @Column(name = "session")
-    private String session;
+    private Date loginDate;
+    private Date registerDate;
+    private Date updatedDate;
 
-    @JsonIgnore
-    @Column(name = "token")
-    private String token;
-
-    @JsonProperty
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = CascadeType.ALL)
     private Set<Character> characters = new LinkedHashSet<>();
-
 
     public User() {
     }
@@ -74,7 +40,9 @@ public class User extends BaseEntity {
         this.password = password;
     }
 
-
+    @Basic
+    @JsonProperty
+    @Column(name = "login", nullable = false)
     public String getLogin() {
         return login;
     }
@@ -83,7 +51,9 @@ public class User extends BaseEntity {
         this.login = login;
     }
 
-
+    @Basic
+    @JsonIgnore
+    @Column(name = "password", nullable = false)
     public String getPassword() {
         return password;
     }
@@ -92,43 +62,9 @@ public class User extends BaseEntity {
         this.password = password;
     }
 
-
-    public Date getRegisterDate() {
-        return registerDate;
-    }
-
-    public void setRegisterDate(Date registerDate) {
-        this.registerDate = registerDate;
-    }
-
-
-    public Date getLoginDate() {
-        return loginDate;
-    }
-
-    public void setLoginDate(Date loginDate) {
-        this.loginDate = loginDate;
-    }
-
-
-    public int getStatus() {
-        return status;
-    }
-
-    public void setStatus(int status) {
-        this.status = status;
-    }
-
-
-    public int getAccess() {
-        return access;
-    }
-
-    public void setAccess(int access) {
-        this.access = access;
-    }
-
-
+    @Basic
+    @JsonIgnore
+    @Column(name = "session")
     public String getSession() {
         return session;
     }
@@ -137,7 +73,9 @@ public class User extends BaseEntity {
         this.session = session;
     }
 
-
+    @Basic
+    @JsonIgnore
+    @Column(name = "token")
     public String getToken() {
         return token;
     }
@@ -146,6 +84,30 @@ public class User extends BaseEntity {
         this.token = token;
     }
 
+    @Basic
+    @JsonProperty
+    @Column(name = "status")
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
+    @Basic
+    @JsonProperty
+    @Column(name = "access", nullable = false)
+    public int getAccess() {
+        return access;
+    }
+
+    public void setAccess(int access) {
+        this.access = access;
+    }
+
+    @JsonProperty
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = CascadeType.ALL)
     public Set<Character> getCharacters() {
         return characters;
     }
@@ -154,6 +116,36 @@ public class User extends BaseEntity {
         this.characters = characters;
     }
 
+    @Basic
+    @JsonProperty
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created_at")
+    public Date getRegisterDate() {
+        return registerDate;
+    }
+
+    public void setRegisterDate(Date registerDate) {
+        this.registerDate = registerDate;
+    }
+
+    @Basic
+    @JsonProperty
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "last_login_at")
+    public Date getLoginDate() {
+        return loginDate;
+    }
+
+    public void setLoginDate(Date loginDate) {
+        this.loginDate = loginDate;
+    }
+
+    @Basic
+    @JsonProperty
+    @UpdateTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "updated_at")
     public Date getUpdatedDate() {
         return updatedDate;
     }
@@ -166,14 +158,11 @@ public class User extends BaseEntity {
     public String toString() {
         return "User{" +
                 "login='" + login + '\'' +
-                ", password='" + password + '\'' +
                 ", loginDate=" + loginDate +
                 ", registerDate=" + registerDate +
                 ", updatedDate=" + updatedDate +
                 ", status=" + status +
                 ", access=" + access +
-                ", session='" + session + '\'' +
-                ", token='" + token + '\'' +
                 '}';
     }
 }

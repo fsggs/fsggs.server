@@ -1,5 +1,6 @@
 package com.fsggs.server.core.network;
 
+import com.fsggs.server.Application;
 import com.fsggs.server.server.HttpServerHandler;
 import com.mitchellbosecke.pebble.PebbleEngine;
 import com.mitchellbosecke.pebble.error.PebbleException;
@@ -7,11 +8,10 @@ import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.multipart.FileUpload;
 import io.netty.util.AsciiString;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -25,6 +25,7 @@ abstract public class BaseController {
     private Map<AsciiString, String> headers = new HashMap<>();
     protected Map<String, String> params = new HashMap<>();
     protected Map<String, String> data = new HashMap<>();
+    protected Map<String, FileUpload> files = new HashMap<>();
     protected Set<Cookie> cookies;
 
     private Method action;
@@ -63,6 +64,11 @@ abstract public class BaseController {
 
     public BaseController setData(Map<String, String> data) {
         this.data = data;
+        return this;
+    }
+
+    public BaseController setFiles(Map<String, FileUpload> files) {
+        this.files = files;
         return this;
     }
 
@@ -149,5 +155,22 @@ abstract public class BaseController {
     protected String redirect(String url) {
         HttpServerHandler.redirect(context, url);
         return url;
+    }
+
+    protected void fileUpload(String fileAttribute, File outputFile) throws IOException {
+        if (files.containsKey(fileAttribute)) {
+            FileUpload fileUpload = files.get(fileAttribute);
+            if (fileUpload.isCompleted()) {
+                //TODO:: nio
+
+                //FileChannel inputChannel = new FileInputStream(fileUpload.getFile()).getChannel();
+                //FileChannel outputChannel = new FileOutputStream(outputFile).getChannel();
+                //outputChannel.transferFrom(inputChannel, 0, inputChannel.size());
+            } else {
+                Application.logger.info("File " + fileUpload.getFilename() + " to be continued, but should not!");
+            }
+        } else {
+            Application.logger.info("Upload file with attribute " + fileAttribute + " not found.");
+        }
     }
 }
