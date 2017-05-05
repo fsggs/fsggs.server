@@ -1,7 +1,7 @@
 package com.fsggs.server.models.game.maps;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fsggs.server.core.db.BaseEntity;
+import com.fsggs.server.core.db.BaseModelEntity;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.CreationTimestamp;
@@ -13,13 +13,13 @@ import java.util.Date;
 @Entity
 @Table(name = "game_maps")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class Map extends BaseEntity implements IMap {
+public class MapEntity extends BaseModelEntity implements IMapEntity {
     private String name;
     private String metadata;
     private int version;
-    private Universe universe;
-    private Galaxy galaxy;
-    private Solar solar;
+    private UniverseEntity universe;
+    private GalaxyEntity galaxyEntity;
+    private SolarEntity solar;
     private Long universeId;
     private Long galaxyId;
     private Long solarId;
@@ -83,31 +83,31 @@ public class Map extends BaseEntity implements IMap {
 
 //    @ManyToOne
 //    @JoinColumn(name = "universe_id", referencedColumnName = "id", insertable = false, updatable = false)
-//    public Universe getUniverse() {
+//    public UniverseEntity getUniverse() {
 //        return universe;
 //    }
 //
-//    public void setUniverse(Universe universe) {
+//    public void setUniverse(UniverseEntity universe) {
 //        this.universe = universe;
 //    }
 //
 //    @ManyToOne
 //    @JoinColumn(name = "galaxy_id", referencedColumnName = "id", insertable = false, updatable = false)
-//    public Galaxy getGalaxy() {
-//        return galaxy;
+//    public GalaxyEntity getGalaxy() {
+//        return galaxyEntity;
 //    }
 //
-//    public void setGalaxy(Galaxy galaxy) {
-//        this.galaxy = galaxy;
+//    public void setGalaxy(GalaxyEntity galaxyEntity) {
+//        this.galaxyEntity = galaxyEntity;
 //    }
 //
 //    @ManyToOne
 //    @JoinColumn(name = "solar_id", referencedColumnName = "id", insertable = false, updatable = false)
-//    public Solar getSolar() {
+//    public SolarEntity getSolar() {
 //        return solar;
 //    }
 //
-//    public void setSolar(Solar solar) {
+//    public void setSolar(SolarEntity solar) {
 //        this.solar = solar;
 //    }
 

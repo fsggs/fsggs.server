@@ -1,11 +1,6 @@
 package com.fsggs.server.models.game.objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fsggs.server.core.db.BaseEntity;
-import com.fsggs.server.models.game.Character;
-import com.fsggs.server.models.game.maps.Galaxy;
-import com.fsggs.server.models.game.maps.Solar;
-import com.fsggs.server.models.game.maps.Universe;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.CreationTimestamp;
@@ -17,12 +12,12 @@ import java.util.Date;
 @Entity
 @Table(name = "game_map_objects")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class GameObject extends GameObjectModel implements IGameObject {
+public class SpaceObjectEntity extends SpaceObjectModel implements ISpaceObjectEntity {
     private String name = "AUX-U0G0S0IN";
     private String title = "Anomaly";
     private String metadata = "";
-    // private Character owner;
-    //private Galaxy galaxy;
+    // private CharacterEntity owner;
+    //private GalaxyEntity galaxy;
     private Long ownerId;
     private long universeId = 0;
     private long galaxyId = 0;
@@ -31,17 +26,17 @@ public class GameObject extends GameObjectModel implements IGameObject {
     private long posY = 0;
     private long posZ = 0;
     private long typeId = 0;
-    //private Universe universe;
-    //private Solar solar;
+    //private UniverseEntity universe;
+    //private SolarEntity solar;
 
     private Date createdDate;
     private Date updatedDate;
 
-    public GameObject() {
+    public SpaceObjectEntity() {
         super();
     }
 
-    public GameObject(long typeId) {
+    public SpaceObjectEntity(long typeId) {
         this();
         this.typeId = typeId;
     }
@@ -51,7 +46,7 @@ public class GameObject extends GameObjectModel implements IGameObject {
         return name;
     }
 
-    public GameObject setName(String name) {
+    public SpaceObjectEntity setName(String name) {
         this.name = name;
         return this;
     }
@@ -61,7 +56,7 @@ public class GameObject extends GameObjectModel implements IGameObject {
         return title;
     }
 
-    public GameObject setTitle(String title) {
+    public SpaceObjectEntity setTitle(String title) {
         this.title = title;
         return this;
     }
@@ -71,29 +66,29 @@ public class GameObject extends GameObjectModel implements IGameObject {
         return metadata;
     }
 
-    public GameObject setMetadata(String metadata) {
+    public SpaceObjectEntity setMetadata(String metadata) {
         this.metadata = metadata;
         return this;
     }
 
 //    @ManyToOne
 //    @JoinColumn(name = "owner_id", referencedColumnName = "id")
-//    public Character getOwner() {
+//    public CharacterEntity getOwner() {
 //        return owner;
 //    }
 //
-//    public GameObject setOwner(Character owner) {
+//    public SpaceObjectEntity setOwner(CharacterEntity owner) {
 //        this.owner = owner;
 //        return this;
 //    }
 
 //    @ManyToOne
 //    @JoinColumn(name = "galaxy_id", referencedColumnName = "id")
-//    public Galaxy getGalaxy() {
+//    public GalaxyEntity getGalaxy() {
 //        return galaxy;
 //    }
 //
-//    public GameObject setGalaxy(Galaxy galaxy) {
+//    public SpaceObjectEntity setGalaxy(GalaxyEntity galaxy) {
 //        this.galaxy = galaxy;
 //        return this;
 //    }
@@ -103,7 +98,7 @@ public class GameObject extends GameObjectModel implements IGameObject {
         return ownerId;
     }
 
-    public GameObject setOwnerId(Long owner) {
+    public SpaceObjectEntity setOwnerId(Long owner) {
         this.ownerId = (owner != null ? owner : 0);
         return this;
     }
@@ -113,7 +108,7 @@ public class GameObject extends GameObjectModel implements IGameObject {
         return universeId;
     }
 
-    public GameObject setUniverseId(long universeId) {
+    public SpaceObjectEntity setUniverseId(long universeId) {
         this.universeId = universeId;
         return this;
     }
@@ -123,7 +118,7 @@ public class GameObject extends GameObjectModel implements IGameObject {
         return galaxyId;
     }
 
-    public GameObject setGalaxyId(long galaxyId) {
+    public SpaceObjectEntity setGalaxyId(long galaxyId) {
         this.galaxyId = galaxyId;
         return this;
     }
@@ -133,7 +128,7 @@ public class GameObject extends GameObjectModel implements IGameObject {
         return solarId;
     }
 
-    public GameObject setSolarId(long solarId) {
+    public SpaceObjectEntity setSolarId(long solarId) {
         this.solarId = solarId;
         return this;
     }
@@ -143,7 +138,7 @@ public class GameObject extends GameObjectModel implements IGameObject {
         return posX;
     }
 
-    public GameObject setPosX(long posX) {
+    public SpaceObjectEntity setPosX(long posX) {
         this.posX = posX;
         return this;
     }
@@ -153,7 +148,7 @@ public class GameObject extends GameObjectModel implements IGameObject {
         return posY;
     }
 
-    public GameObject setPosY(long posY) {
+    public SpaceObjectEntity setPosY(long posY) {
         this.posY = posY;
         return this;
     }
@@ -163,7 +158,7 @@ public class GameObject extends GameObjectModel implements IGameObject {
         return posZ;
     }
 
-    public GameObject setPosZ(long posZ) {
+    public SpaceObjectEntity setPosZ(long posZ) {
         this.posZ = posZ;
         return this;
     }
@@ -173,7 +168,7 @@ public class GameObject extends GameObjectModel implements IGameObject {
         return typeId;
     }
 
-    public GameObject setTypeId(long typeId) {
+    public SpaceObjectEntity setTypeId(long typeId) {
         this.typeId = typeId;
         return this;
     }
@@ -204,22 +199,22 @@ public class GameObject extends GameObjectModel implements IGameObject {
 
 //    @ManyToOne
 //    @JoinColumn(name = "universe_id", referencedColumnName = "id")
-//    public Universe getUniverse() {
+//    public UniverseEntity getUniverse() {
 //        return universe;
 //    }
 //
-//    public GameObject setUniverse(Universe universe) {
+//    public SpaceObjectEntity setUniverse(UniverseEntity universe) {
 //        this.universe = universe;
 //        return this;
 //    }
 //
 //    @ManyToOne
 //    @JoinColumn(name = "solar_id", referencedColumnName = "id")
-//    public Solar getSolar() {
+//    public SolarEntity getSolar() {
 //        return solar;
 //    }
 //
-//    public GameObject setSolar(Solar solar) {
+//    public SpaceObjectEntity setSolar(SolarEntity solar) {
 //        this.solar = solar;
 //        return this;
 //    }

@@ -1,4 +1,4 @@
 package com.fsggs.server.models.game.maps;
 
-public interface ISolar {
+public interface IUniverseEntity {
 }

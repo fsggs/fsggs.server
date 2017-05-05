@@ -22,42 +22,42 @@
                   memoryStoreEvictionPolicy="LRU"
                   statistics="true"/>
 
-    <cache name="com.fsggs.server.models.auth.User" maxEntriesLocalHeap="10000" eternal="false"
+    <cache name="com.fsggs.server.models.auth.UserEntity" maxEntriesLocalHeap="10000" eternal="false"
            timeToIdleSeconds="5" timeToLiveSeconds="10">
         <persistence strategy="localTempSwap"/>
     </cache>
 
-    <cache name="com.fsggs.server.models.master.Server" maxEntriesLocalHeap="10000" eternal="false"
+    <cache name="com.fsggs.server.models.master.ServerEntity" maxEntriesLocalHeap="10000" eternal="false"
            timeToIdleSeconds="5" timeToLiveSeconds="10">
         <persistence strategy="localTempSwap"/>
     </cache>
 
-    <cache name="com.fsggs.server.models.game.Character" maxEntriesLocalHeap="10000" eternal="false"
+    <cache name="com.fsggs.server.models.game.CharacterEntity" maxEntriesLocalHeap="10000" eternal="false"
            timeToIdleSeconds="5" timeToLiveSeconds="10">
         <persistence strategy="localTempSwap"/>
     </cache>
 
-    <cache name="com.fsggs.server.models.game.maps.Map" maxEntriesLocalHeap="10000" eternal="false"
+    <cache name="com.fsggs.server.models.game.maps.MapEntity" maxEntriesLocalHeap="10000" eternal="false"
            timeToIdleSeconds="5" timeToLiveSeconds="10">
         <persistence strategy="localTempSwap"/>
     </cache>
 
-    <cache name="com.fsggs.server.models.game.maps.Universe" maxEntriesLocalHeap="10000" eternal="false"
+    <cache name="com.fsggs.server.models.game.maps.UniverseEntity" maxEntriesLocalHeap="10000" eternal="false"
            timeToIdleSeconds="5" timeToLiveSeconds="10">
         <persistence strategy="localTempSwap"/>
     </cache>
 
-    <cache name="com.fsggs.server.models.game.maps.Galaxy" maxEntriesLocalHeap="10000" eternal="false"
+    <cache name="com.fsggs.server.models.game.maps.GalaxyEntity" maxEntriesLocalHeap="10000" eternal="false"
            timeToIdleSeconds="5" timeToLiveSeconds="10">
         <persistence strategy="localTempSwap"/>
     </cache>
 
-    <cache name="com.fsggs.server.models.game.maps.Solar" maxEntriesLocalHeap="10000" eternal="false"
+    <cache name="com.fsggs.server.models.game.maps.SolarEntity" maxEntriesLocalHeap="10000" eternal="false"
            timeToIdleSeconds="5" timeToLiveSeconds="10">
         <persistence strategy="localTempSwap"/>
     </cache>
 
-    <cache name="com.fsggs.server.models.game.objects.GameObject" maxEntriesLocalHeap="10000" eternal="false"
+    <cache name="com.fsggs.server.models.game.objects.SpaceObjectEntity" maxEntriesLocalHeap="10000" eternal="false"
            timeToIdleSeconds="5" timeToLiveSeconds="10">
         <persistence strategy="localTempSwap"/>
     </cache>

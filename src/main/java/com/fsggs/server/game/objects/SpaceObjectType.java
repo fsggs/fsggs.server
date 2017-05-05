@@ -1,6 +1,6 @@
 package com.fsggs.server.game.objects;
 
-public enum GameObjectType {
+public enum SpaceObjectType {
     UNKNOWN_ANOMALY(0, "anomaly", "unknown", "AUX"),
     UNKNOWN_SOLAR(10, "solar", "unknown", "SU1"),
     UNKNOWN_PLANET(100, "planet", "unknown", "PU1");
@@ -10,7 +10,7 @@ public enum GameObjectType {
     private String metaType;
     private String index;
 
-    GameObjectType(long typeId, String type, String metaType, String index) {
+    SpaceObjectType(long typeId, String type, String metaType, String index) {
         this.typeId = typeId;
         this.type = type;
         this.metaType = metaType;
@@ -33,8 +33,8 @@ public enum GameObjectType {
         return index;
     }
 
-    static public GameObjectType getType(long typeId) {
-        for (GameObjectType got : GameObjectType.values()) {
+    static public SpaceObjectType getType(long typeId) {
+        for (SpaceObjectType got : SpaceObjectType.values()) {
             if (got.typeId == typeId) {
                 return got;
             }

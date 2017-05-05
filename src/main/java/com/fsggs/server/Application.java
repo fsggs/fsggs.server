@@ -84,7 +84,7 @@ public class Application {
 
     private void stop(boolean customEvent) {
         Game game = Game.getInstance();
-        if (game != null) game.stop();
+        if (game != null) game.halt();
         Application.run = false;
         if (db != null) db.close();
         logger.info("Server shutdown.");

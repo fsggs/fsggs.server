@@ -1,8 +1,8 @@
 package com.fsggs.server.models.master;
 
 import com.fsggs.server.Application;
-import com.fsggs.server.core.db.BaseEntity;
-import com.fsggs.server.core.db.IBaseEntity;
+import com.fsggs.server.core.db.BaseModelEntity;
+import com.fsggs.server.core.db.IBaseModelEntity;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Projections;
@@ -15,16 +15,16 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-abstract class ServerModel extends BaseEntity {
-    static public List<Server> getByName(String name) throws SQLException {
+abstract class ServerModel extends BaseModelEntity {
+    static public List<ServerEntity> getByName(String name) throws SQLException {
         Session session = null;
-        List<Server> servers = new ArrayList<>();
+        List<ServerEntity> servers = new ArrayList<>();
         try {
             session = Application.db.openSession();
-            Criteria criteria = session.createCriteria(Server.class)
+            Criteria criteria = session.createCriteria(ServerEntity.class)
                     .add(Restrictions.eq("name", name));
 
-            servers = IBaseEntity.listAndCast(criteria);
+            servers = ServerModel.listAndCast(criteria);
         } catch (Exception e) {
             e.printStackTrace();
             Application.logger.warn("Error when getByName()");
@@ -36,15 +36,15 @@ abstract class ServerModel extends BaseEntity {
         return servers;
     }
 
-    static public List<Server> getByAddress(String address) throws SQLException {
+    static public List<ServerEntity> getByAddress(String address) throws SQLException {
         Session session = null;
-        List<Server> servers = new ArrayList<>();
+        List<ServerEntity> servers = new ArrayList<>();
         try {
             session = Application.db.openSession();
-            Criteria criteria = session.createCriteria(Server.class)
+            Criteria criteria = session.createCriteria(ServerEntity.class)
                     .add(Restrictions.eq("address", address));
 
-            servers = IBaseEntity.listAndCast(criteria);
+            servers = ServerModel.listAndCast(criteria);
         } catch (Exception e) {
             e.printStackTrace();
             Application.logger.warn("Error when getByAddress()");
@@ -56,21 +56,21 @@ abstract class ServerModel extends BaseEntity {
         return servers;
     }
 
-    static public List<Server> getByToken(String token) throws SQLException {
+    static public List<ServerEntity> getByToken(String token) throws SQLException {
         final long ONE_MINUTE_IN_MILLIS = 60000;
         Calendar date = Calendar.getInstance();
         long currentTime = date.getTimeInMillis();
         Date lastHalfMinute = new Date(currentTime - ONE_MINUTE_IN_MILLIS / 2);
 
         Session session = null;
-        List<Server> servers = new ArrayList<>();
+        List<ServerEntity> servers = new ArrayList<>();
         try {
             session = Application.db.openSession();
-            Criteria criteria = session.createCriteria(Server.class)
+            Criteria criteria = session.createCriteria(ServerEntity.class)
                     .add(Restrictions.eq("token", token))
                     .add(Restrictions.le("updatedDate", lastHalfMinute));
 
-            servers = IBaseEntity.listAndCast(criteria);
+            servers = ServerModel.listAndCast(criteria);
         } catch (Exception e) {
             e.printStackTrace();
             Application.logger.warn("Error when getByToken()");
@@ -83,28 +83,28 @@ abstract class ServerModel extends BaseEntity {
     }
 
     /* Customs */
-    static public List<Server> getAllScope(int offset, int limit) throws SQLException {
+    static public List<ServerEntity> getAllScope(int offset, int limit) throws SQLException {
         final long ONE_MINUTE_IN_MILLIS = 60000;
         Calendar date = Calendar.getInstance();
         long currentTime = date.getTimeInMillis();
         Date lastMinute = new Date(currentTime - ONE_MINUTE_IN_MILLIS);
 
         Session session = null;
-        List<Server> servers = new ArrayList<>();
+        List<ServerEntity> servers = new ArrayList<>();
         try {
             session = Application.db.openSession();
-            Criteria criteria = session.createCriteria(Server.class)
+            Criteria criteria = session.createCriteria(ServerEntity.class)
                     .setProjection(Projections.projectionList()
                             .add(Projections.property("name"), "name")
                             .add(Projections.property("address"), "address")
                             .add(Projections.property("updatedDate"), "updatedDate"))
                     .add(Restrictions.gt("updatedDate", lastMinute))
-                    .setResultTransformer(Transformers.aliasToBean(Server.class));
+                    .setResultTransformer(Transformers.aliasToBean(ServerEntity.class));
 
             criteria.setFirstResult(offset);
             criteria.setMaxResults(limit);
 
-            servers = IBaseEntity.listAndCast(criteria);
+            servers = ServerModel.listAndCast(criteria);
         } catch (Exception e) {
             e.printStackTrace();
             Application.logger.warn("Error when getAllScope()");

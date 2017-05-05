@@ -2,7 +2,7 @@ package com.fsggs.server.models.auth;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fsggs.server.models.game.Character;
+import com.fsggs.server.models.game.CharacterEntity;
 import org.hibernate.annotations.*;
 import org.hibernate.annotations.Cache;
 
@@ -16,9 +16,9 @@ import java.util.*;
 @Table(name = "auth_user")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @FetchProfile(name = "user-with-characters", fetchOverrides = {
-        @FetchProfile.FetchOverride(entity = User.class, association = "characters", mode = FetchMode.JOIN)
+        @FetchProfile.FetchOverride(entity = UserEntity.class, association = "characters", mode = FetchMode.JOIN)
 })
-public class User extends UserModel implements IUser {
+public class UserEntity extends UserModel implements IUserEntity {
     private String login;
     private String password;
     private String session;
@@ -30,12 +30,12 @@ public class User extends UserModel implements IUser {
     private Date registerDate;
     private Date updatedDate;
 
-    private Set<Character> characters = new LinkedHashSet<>();
+    private Set<CharacterEntity> characters = new LinkedHashSet<>();
 
-    public User() {
+    public UserEntity() {
     }
 
-    public User(String login, String password) {
+    public UserEntity(String login, String password) {
         this.login = login;
         this.password = password;
     }
@@ -108,11 +108,11 @@ public class User extends UserModel implements IUser {
 
     @JsonProperty
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = CascadeType.ALL)
-    public Set<Character> getCharacters() {
+    public Set<CharacterEntity> getCharacters() {
         return characters;
     }
 
-    public void setCharacters(Set<Character> characters) {
+    public void setCharacters(Set<CharacterEntity> characters) {
         this.characters = characters;
     }
 
@@ -156,7 +156,7 @@ public class User extends UserModel implements IUser {
 
     @Override
     public String toString() {
-        return "User{" +
+        return "UserEntity{" +
                 "login='" + login + '\'' +
                 ", loginDate=" + loginDate +
                 ", registerDate=" + registerDate +

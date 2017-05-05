@@ -1,9 +1,7 @@
 package com.fsggs.server.models.game.maps;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fsggs.server.core.db.BaseEntity;
-import com.fsggs.server.models.game.Character;
-import com.fsggs.server.models.game.objects.GameObject;
+import com.fsggs.server.core.db.BaseModelEntity;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.CreationTimestamp;
@@ -11,22 +9,21 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.Set;
 
 @Entity
 @Table(name = "game_map_solars")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class Solar extends BaseEntity implements ISolar {
+public class SolarEntity extends BaseModelEntity implements ISolarEntity {
     private String name;
     private String title;
-    //private Character owner;
-    //private Galaxy galaxy;
+    //private CharacterEntity owner;
+    //private GalaxyEntity galaxy;
     private long ownerId;
     private long universeId;
     private long galaxyId;
-    //private Universe universe;
-    //private Set<Map> maps;
-    //private Set<GameObject> objects;
+    //private UniverseEntity universe;
+    //private Set<MapEntity> maps;
+    //private Set<SpaceObjectEntity> objects;
 
     private Date createdDate;
     private Date updatedDate;
@@ -53,21 +50,21 @@ public class Solar extends BaseEntity implements ISolar {
 
 //    @ManyToOne
 //    @JoinColumn(name = "owner_id", referencedColumnName = "id", nullable = false)
-//    public Character getGameCharactersByOwner() {
+//    public CharacterEntity getGameCharactersByOwner() {
 //        return owner;
 //    }
 //
-//    public void setGameCharactersByOwner(Character owner) {
+//    public void setGameCharactersByOwner(CharacterEntity owner) {
 //        this.owner = owner;
 //    }
 //
 //    @ManyToOne
 //    @JoinColumn(name = "galaxy_id", referencedColumnName = "id", nullable = false)
-//    public Galaxy getGalaxy() {
+//    public GalaxyEntity getGalaxy() {
 //        return galaxy;
 //    }
 //
-//    public void setGalaxy(Galaxy galaxy) {
+//    public void setGalaxy(GalaxyEntity galaxy) {
 //        this.galaxy = galaxy;
 //    }
 
@@ -127,29 +124,29 @@ public class Solar extends BaseEntity implements ISolar {
 
 //    @ManyToOne
 //    @JoinColumn(name = "universe_id", referencedColumnName = "id", nullable = false)
-//    public Universe getUniverse() {
+//    public UniverseEntity getUniverse() {
 //        return universe;
 //    }
 //
-//    public void setUniverse(Universe universe) {
+//    public void setUniverse(UniverseEntity universe) {
 //        this.universe = universe;
 //    }
 //
 //    @OneToMany(fetch = FetchType.LAZY, mappedBy = "solar", cascade = CascadeType.ALL)
-//    public Set<Map> getMaps() {
+//    public Set<MapEntity> getMaps() {
 //        return maps;
 //    }
 //
-//    public void setMaps(Set<Map> maps) {
+//    public void setMaps(Set<MapEntity> maps) {
 //        this.maps = maps;
 //    }
 //
 //    @OneToMany(fetch = FetchType.LAZY, mappedBy = "solar", cascade = CascadeType.ALL)
-//    public Set<GameObject> getObjects() {
+//    public Set<SpaceObjectEntity> getObjects() {
 //        return objects;
 //    }
 //
-//    public void setObjects(Set<GameObject> objects) {
+//    public void setObjects(Set<SpaceObjectEntity> objects) {
 //        this.objects = objects;
 //    }
 }

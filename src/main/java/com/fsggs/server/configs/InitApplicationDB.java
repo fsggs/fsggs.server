@@ -1,14 +1,14 @@
 package com.fsggs.server.configs;
 
 import com.fsggs.server.Application;
-import com.fsggs.server.models.auth.User;
-import com.fsggs.server.models.game.Character;
-import com.fsggs.server.models.game.maps.Galaxy;
-import com.fsggs.server.models.game.maps.Map;
-import com.fsggs.server.models.game.maps.Solar;
-import com.fsggs.server.models.game.maps.Universe;
-import com.fsggs.server.models.game.objects.GameObject;
-import com.fsggs.server.models.master.Server;
+import com.fsggs.server.models.auth.UserEntity;
+import com.fsggs.server.models.game.CharacterEntity;
+import com.fsggs.server.models.game.maps.GalaxyEntity;
+import com.fsggs.server.models.game.maps.MapEntity;
+import com.fsggs.server.models.game.maps.SolarEntity;
+import com.fsggs.server.models.game.maps.UniverseEntity;
+import com.fsggs.server.models.game.objects.SpaceObjectEntity;
+import com.fsggs.server.models.master.ServerEntity;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.FlywayException;
 import org.hibernate.Session;
@@ -106,15 +106,15 @@ public class InitApplicationDB {
     }
 
     private void registerEntity() {
-        config.addAnnotatedClass(User.class);
-        config.addAnnotatedClass(Server.class);
-        config.addAnnotatedClass(Character.class);
+        config.addAnnotatedClass(UserEntity.class);
+        config.addAnnotatedClass(ServerEntity.class);
+        config.addAnnotatedClass(CharacterEntity.class);
 
-        config.addAnnotatedClass(Universe.class);
-        config.addAnnotatedClass(Galaxy.class);
-        config.addAnnotatedClass(Solar.class);
-        config.addAnnotatedClass(Map.class);
+        config.addAnnotatedClass(UniverseEntity.class);
+        config.addAnnotatedClass(GalaxyEntity.class);
+        config.addAnnotatedClass(SolarEntity.class);
+        config.addAnnotatedClass(MapEntity.class);
 
-        config.addAnnotatedClass(GameObject.class);
+        config.addAnnotatedClass(SpaceObjectEntity.class);
     }
 }

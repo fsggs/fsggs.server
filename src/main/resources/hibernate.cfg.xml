@@ -50,15 +50,15 @@
         <property name="hibernate.generate_statistics">false</property>
         <property name="hibernate.cache.use_structured_entries">true</property>
 
-        <mapping class="com.fsggs.server.models.auth.User"/>
-        <mapping class="com.fsggs.server.models.master.Server"/>
-        <mapping class="com.fsggs.server.models.game.Character"/>
+        <mapping class="com.fsggs.server.models.auth.UserEntity"/>
+        <mapping class="com.fsggs.server.models.master.ServerEntity"/>
+        <mapping class="com.fsggs.server.models.game.CharacterEntity"/>
 
-        <mapping class="com.fsggs.server.models.game.maps.Map"/>
-        <mapping class="com.fsggs.server.models.game.maps.Universe"/>
-        <mapping class="com.fsggs.server.models.game.maps.Galaxy"/>
-        <mapping class="com.fsggs.server.models.game.maps.Solar"/>
-        <mapping class="com.fsggs.server.models.game.objects.GameObject"/>
+        <mapping class="com.fsggs.server.models.game.maps.MapEntity"/>
+        <mapping class="com.fsggs.server.models.game.maps.UniverseEntity"/>
+        <mapping class="com.fsggs.server.models.game.maps.GalaxyEntity"/>
+        <mapping class="com.fsggs.server.models.game.maps.SolarEntity"/>
+        <mapping class="com.fsggs.server.models.game.objects.SpaceObjectEntity"/>
     </session-factory>
 
 </hibernate-configuration>

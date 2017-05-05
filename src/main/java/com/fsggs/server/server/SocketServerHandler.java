@@ -1,5 +1,7 @@
 package com.fsggs.server.server;
 
+import com.fsggs.server.Application;
+import com.fsggs.server.core.log.FSGGSLevel;
 import io.netty.channel.*;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
@@ -12,7 +14,7 @@ import io.netty.util.concurrent.GlobalEventExecutor;
 
 import java.lang.reflect.InvocationTargetException;
 
-public class SocketServerHandler extends SimpleChannelInboundHandler<HttpObject> {
+public class SocketServerHandler extends SimpleChannelInboundHandler<Object> {
 
     static final public ChannelGroup channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
     WebSocketServerHandshaker handshaker;
@@ -25,8 +27,11 @@ public class SocketServerHandler extends SimpleChannelInboundHandler<HttpObject>
     }
 
     @Override
-    public void channelRead0(ChannelHandlerContext context, HttpObject message)
+    public void channelRead0(ChannelHandlerContext context, Object message)
             throws IllegalAccessException, InstantiationException, InvocationTargetException {
+
+        Application.logger.log(Application.FSGGS, message);
+
         if (message instanceof HttpRequest) {
             new HttpServerHandler(this, context, (HttpRequest) message);
         } else if (message instanceof WebSocketFrame) {

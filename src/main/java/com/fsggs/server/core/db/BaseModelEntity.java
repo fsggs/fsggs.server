@@ -2,7 +2,6 @@ package com.fsggs.server.core.db;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fsggs.server.Application;
-import com.fsggs.server.models.auth.User;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -18,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @MappedSuperclass
-abstract public class BaseEntity implements Serializable {
+abstract public class BaseModelEntity implements IBaseModelEntity, Serializable {
     private Long id;
 
     @Id
@@ -48,13 +47,13 @@ abstract public class BaseEntity implements Serializable {
 
     public void save() throws SQLException {
         if (getId() != null) {
-            BaseEntity.update(this);
+            BaseModelEntity.update(this);
         } else {
-            BaseEntity.add(this);
+            BaseModelEntity.add(this);
         }
     }
 
-    static public void add(BaseEntity entity) throws SQLException {
+    static public void add(BaseModelEntity entity) throws SQLException {
         Session session = null;
         try {
             session = Application.db.openSession();
@@ -71,7 +70,7 @@ abstract public class BaseEntity implements Serializable {
         }
     }
 
-    static public void update(BaseEntity entity) throws SQLException {
+    static public void update(BaseModelEntity entity) throws SQLException {
         Session session = null;
         try {
             session = Application.db.openSession();
@@ -88,7 +87,7 @@ abstract public class BaseEntity implements Serializable {
         }
     }
 
-    static public void delete(BaseEntity entity) throws SQLException {
+    static public void delete(BaseModelEntity entity) throws SQLException {
         Session session = null;
         try {
             session = Application.db.openSession();
@@ -105,12 +104,12 @@ abstract public class BaseEntity implements Serializable {
         }
     }
 
-    static public BaseEntity getById(Long id) throws SQLException {
+    static public BaseModelEntity getById(Long id) throws SQLException {
         Session session = null;
-        BaseEntity entity = null;
+        BaseModelEntity entity = null;
         try {
             session = Application.db.openSession();
-            entity = session.get(BaseEntity.class, id);
+            entity = session.get(BaseModelEntity.class, id);
         } catch (Exception e) {
             e.printStackTrace();
             Application.logger.warn("Error when getById()");
@@ -122,12 +121,12 @@ abstract public class BaseEntity implements Serializable {
         return entity;
     }
 
-    static public List<BaseEntity> getAll() throws SQLException {
+    static public List<BaseModelEntity> getAll() throws SQLException {
         Session session = null;
-        List<BaseEntity> entities = new ArrayList<>();
+        List<BaseModelEntity> entities = new ArrayList<>();
         try {
             session = Application.db.openSession();
-            Criteria criteria = session.createCriteria(BaseEntity.class);
+            Criteria criteria = session.createCriteria(BaseModelEntity.class);
 
             entities = listAndCast(criteria);
         } catch (Exception e) {

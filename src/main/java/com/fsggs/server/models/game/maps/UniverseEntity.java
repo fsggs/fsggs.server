@@ -1,9 +1,7 @@
 package com.fsggs.server.models.game.maps;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fsggs.server.core.db.BaseEntity;
-import com.fsggs.server.models.game.Character;
-import com.fsggs.server.models.game.objects.GameObject;
+import com.fsggs.server.core.db.BaseModelEntity;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.CreationTimestamp;
@@ -11,21 +9,19 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.Set;
 
 @Entity
-@Table(name = "game_map_galaxies")
+@Table(name = "game_map_universes")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class Galaxy extends BaseEntity implements IGalaxy {
+public class UniverseEntity extends BaseModelEntity implements IUniverseEntity {
     private String name;
     private String title;
-    //private Character owner;
+    //private CharacterEntity owner;
     private long ownerId;
-    private long universeId;
-    //private Universe universe;
-    //private Set<Solar> solars;
-    //private Set<Map> maps;
-    //private Set<GameObject> objects;
+    //private Set<GalaxyEntity> galaxies;
+    //private Set<SolarEntity> solars;
+    //private Set<MapEntity> maps;
+    //private Set<SpaceObjectEntity> objects;
 
     private Date createdDate;
     private Date updatedDate;
@@ -51,12 +47,12 @@ public class Galaxy extends BaseEntity implements IGalaxy {
     }
 
 //    @ManyToOne
-//    @JoinColumn(name = "owner_id", referencedColumnName = "id", nullable = false)
-//    public Character getOwner() {
+//    @JoinColumn(name = "owner_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
+//    public CharacterEntity getOwner() {
 //        return owner;
 //    }
 //
-//    public void setOwner(Character owner) {
+//    public void setOwner(CharacterEntity owner) {
 //        this.owner = owner;
 //    }
 
@@ -68,16 +64,6 @@ public class Galaxy extends BaseEntity implements IGalaxy {
 
     public void setOwnerId(long ownerId) {
         this.ownerId = ownerId;
-    }
-
-    @Basic
-    @Column(name = "universe_id")
-    public long getUniverseId() {
-        return universeId;
-    }
-
-    public void setUniverseId(long universeId) {
-        this.universeId = universeId;
     }
 
     @JsonProperty
@@ -104,41 +90,39 @@ public class Galaxy extends BaseEntity implements IGalaxy {
         this.updatedDate = updatedDate;
     }
 
-//    @ManyToOne
-//    @JoinColumn(name = "universe_id", referencedColumnName = "id", nullable = false)
-//    public Universe getUniverse() {
-//        return universe;
+//    @OneToMany(fetch = FetchType.LAZY, mappedBy = "universe", cascade = CascadeType.ALL)
+//    public Set<GalaxyEntity> getGalaxies() {
+//        return galaxies;
 //    }
 //
-//    public void setUniverse(Universe universe) {
-//        this.universe = universe;
+//    public void setGalaxies(Set<GalaxyEntity> galaxies) {
+//        this.galaxies = galaxies;
 //    }
 //
-//    @OneToMany(fetch = FetchType.LAZY, mappedBy = "galaxy", cascade = CascadeType.ALL)
-//    public Set<Solar> getSolars() {
+//    @OneToMany(fetch = FetchType.LAZY, mappedBy = "universe", cascade = CascadeType.ALL)
+//    public Set<SolarEntity> getSolars() {
 //        return solars;
 //    }
 //
-//    public void setSolars(Set<Solar> solars) {
+//    public void setSolars(Set<SolarEntity> solars) {
 //        this.solars = solars;
 //    }
 //
-//    @OneToMany(fetch = FetchType.LAZY, mappedBy = "galaxy", cascade = CascadeType.ALL)
-//    public Set<Map> getMaps() {
+//    @OneToMany(fetch = FetchType.LAZY, mappedBy = "universe", cascade = CascadeType.ALL)
+//    public Set<MapEntity> getMaps() {
 //        return maps;
 //    }
 //
-//    public void setMaps(Set<Map> maps) {
+//    public void setMaps(Set<MapEntity> maps) {
 //        this.maps = maps;
 //    }
 //
-//
-//    @OneToMany(fetch = FetchType.LAZY, mappedBy = "galaxy", cascade = CascadeType.ALL)
-//    public Set<GameObject> getObjects() {
+//    @OneToMany(fetch = FetchType.LAZY, mappedBy = "universe", cascade = CascadeType.ALL)
+//    public Set<SpaceObjectEntity> getObjects() {
 //        return objects;
 //    }
 //
-//    public void setObjects(Set<GameObject> objects) {
+//    public void setObjects(Set<SpaceObjectEntity> objects) {
 //        this.objects = objects;
 //    }
 }

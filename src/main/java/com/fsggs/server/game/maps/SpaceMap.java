@@ -1,20 +1,20 @@
 package com.fsggs.server.game.maps;
 
 import com.fsggs.server.Application;
-import com.fsggs.server.game.objects.GameObject;
+import com.fsggs.server.game.objects.SpaceObject;
 
 import java.util.*;
 
 import static com.fsggs.server.Application.FSGGS;
 
 public class SpaceMap {
-    private Map<Long, Map<Long, Map<Long, List<GameObject>>>> map = new HashMap<>();
+    private Map<Long, Map<Long, Map<Long, List<SpaceObject>>>> map = new HashMap<>();
 
     public boolean loadChunk(long universe, long galaxy, long solar) {
         if (!map.containsKey(universe)) map.put(universe, new HashMap<>());
         if (!map.get(universe).containsKey(galaxy)) map.get(universe).put(galaxy, new HashMap<>());
         if (!map.get(universe).get(galaxy).containsKey(solar))
-            map.get(universe).get(galaxy).put(solar, GameObject.loadSolarChunk(universe, galaxy, solar));
+            map.get(universe).get(galaxy).put(solar, SpaceObject.loadSolarChunk(universe, galaxy, solar));
 
         Application.logger.log(FSGGS, "Map chunk [" + universe + ":" + galaxy + ":" + solar + "] loaded.");
         return true;
@@ -32,17 +32,17 @@ public class SpaceMap {
         return true;
     }
 
-    public List<GameObject> getChunk(long universe, long galaxy, long solar) {
+    public List<SpaceObject> getChunk(long universe, long galaxy, long solar) {
         if (isChunkLoaded(universe, galaxy, solar)) {
             return map.get(universe).get(galaxy).get(solar);
         }
         return null;
     }
 
-    public SpaceMap addObject(GameObject object) {
+    public SpaceMap addObject(SpaceObject object) {
         SpacePosition position = object.getPosition();
 
-        List<GameObject> local = getChunk(position.getUniverse(), position.getGalaxy(), position.getSolar());
+        List<SpaceObject> local = getChunk(position.getUniverse(), position.getGalaxy(), position.getSolar());
 
         if (local != null) {
             local.add(object);

@@ -1,21 +1,22 @@
 package com.fsggs.server.game.objects;
 
 import com.fsggs.server.game.maps.SpacePosition;
+import com.fsggs.server.models.game.objects.SpaceObjectEntity;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class GameObject {
+public class SpaceObject {
     private SpacePosition position;
-    private GameObjectType type = GameObjectType.UNKNOWN_ANOMALY;
-    private com.fsggs.server.models.game.objects.GameObject entity;
+    private SpaceObjectType type = SpaceObjectType.UNKNOWN_ANOMALY;
+    private SpaceObjectEntity entity;
 
-    public GameObject(GameObjectType type, SpacePosition position) {
+    public SpaceObject(SpaceObjectType type, SpacePosition position) {
         this.type = type;
         try {
-            entity = new com.fsggs.server.models.game.objects.GameObject(type.getTypeId());
+            entity = new SpaceObjectEntity(type.getTypeId());
             setPosition(position);
             entity.setName(getName());
             entity.save();
@@ -25,18 +26,18 @@ public class GameObject {
         }
     }
 
-    public GameObject(int type, SpacePosition position) {
-        this(GameObjectType.getType(type), position);
+    public SpaceObject(int type, SpacePosition position) {
+        this(SpaceObjectType.getType(type), position);
     }
 
-    public GameObject(com.fsggs.server.models.game.objects.GameObject object) {
+    public SpaceObject(SpaceObjectEntity object) {
         entity = object;
         getPosition();
-        type = GameObjectType.getType(entity.getTypeId());
+        type = SpaceObjectType.getType(entity.getTypeId());
     }
 
-    private static GameObject fromEntity(com.fsggs.server.models.game.objects.GameObject object) {
-        return new GameObject(object);
+    private static SpaceObject fromEntity(SpaceObjectEntity object) {
+        return new SpaceObject(object);
     }
 
     public String getName() {
@@ -74,11 +75,11 @@ public class GameObject {
         return position;
     }
 
-    public GameObject setPosition(SpacePosition position) {
+    public SpaceObject setPosition(SpacePosition position) {
         return setPosition(position, false);
     }
 
-    public GameObject setPosition(SpacePosition position, boolean save) {
+    public SpaceObject setPosition(SpacePosition position, boolean save) {
         try {
             this.position = position;
             entity.setUniverseId(position.getUniverse());
@@ -99,12 +100,11 @@ public class GameObject {
         return this.getClass().getSimpleName() + "{" + getType() + '.' + ":" + getPosition() + "}";
     }
 
-    static public List<GameObject> loadSolarChunk(long universeId, long galaxyId, long solarId) {
-        List<GameObject> list = new ArrayList<>();
+    static public List<SpaceObject> loadSolarChunk(long universeId, long galaxyId, long solarId) {
+        List<SpaceObject> list = new ArrayList<>();
         try {
-            List<com.fsggs.server.models.game.objects.GameObject> objects
-                    = com.fsggs.server.models.game.objects.GameObject.getSolarChunk(universeId, galaxyId, solarId);
-            list.addAll(objects.stream().map(GameObject::fromEntity).collect(Collectors.toList()));
+            List<SpaceObjectEntity> objects = SpaceObjectEntity.getSolarChunk(universeId, galaxyId, solarId);
+            list.addAll(objects.stream().map(SpaceObject::fromEntity).collect(Collectors.toList()));
         } catch (SQLException e) {
             e.printStackTrace();
         }

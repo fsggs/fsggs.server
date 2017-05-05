@@ -1,41 +1,32 @@
-package com.fsggs.server.models.game;
+package com.fsggs.server.models.master;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fsggs.server.core.db.BaseEntity;
-import com.fsggs.server.models.auth.User;
+import org.hibernate.annotations.*;
 import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.util.Date;
 
 @Entity
-@Table(name = "game_characters")
+@Table(name = "master_server")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class Character extends BaseEntity implements ICharacter {
-    private User user;
+public class ServerEntity extends ServerModel implements IServerEntity {
     private String name;
-    private String password = "";
-    private int race;
+    private String address;
+    private String token;
 
     private Date createdDate;
     private Date updatedDate;
 
-    public Character() {
+    public ServerEntity() {
     }
 
-    @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
+    public ServerEntity(String name, String address) {
+        this.name = name;
+        this.address = address;
     }
 
     @JsonProperty
@@ -48,27 +39,27 @@ public class Character extends BaseEntity implements ICharacter {
         this.name = name;
     }
 
+    @JsonProperty
+    @Column(name = "address")
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
     @JsonIgnore
-    @Column(name = "password")
-    public String getPassword() {
-        return password;
+    @Column(name = "token")
+    public String getToken() {
+        return token;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setToken(String token) {
+        this.token = token;
     }
 
-    @JsonProperty
-    @Column(name = "race")
-    public int getRace() {
-        return race;
-    }
-
-    public void setRace(int race) {
-        this.race = race;
-    }
-
-    @JsonProperty
+    @JsonIgnore
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
@@ -80,7 +71,7 @@ public class Character extends BaseEntity implements ICharacter {
         this.createdDate = createdDate;
     }
 
-    @JsonProperty
+    @JsonIgnore
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")

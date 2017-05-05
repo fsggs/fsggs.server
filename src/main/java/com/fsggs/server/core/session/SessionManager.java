@@ -1,7 +1,7 @@
 package com.fsggs.server.core.session;
 
 import com.fsggs.server.Application;
-import com.fsggs.server.models.auth.User;
+import com.fsggs.server.models.auth.UserEntity;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelId;
 
@@ -88,9 +88,9 @@ public class SessionManager {
 
     static public void logoutFromDB(Channel channel) {
         try {
-            User user = (User) User.getById(channelSessions.get(channel.id()).getUserIdentity().getUserId());
+            UserEntity user = (UserEntity) UserEntity.getById(channelSessions.get(channel.id()).getUserIdentity().getUserId());
             user.setSession("");
-            User.update(user);
+            UserEntity.update(user);
         } catch (SQLException e) {
             e.printStackTrace();
         }
